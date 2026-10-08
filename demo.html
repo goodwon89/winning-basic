@@ -58,6 +58,37 @@ main[tabindex="-1"]:focus{outline:none}
 .theme-btn{gap:6px;color:var(--text-2)}
 .theme-btn svg{width:16px;height:16px;flex-shrink:0}
 @media (max-width:640px){.theme-btn .t-label{display:none}.hdr-in{flex-wrap:wrap;gap:4px 8px;padding-block:8px}.brand{margin-right:auto}.nav{order:3;flex-basis:100%;margin-inline:-8px}}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:end;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card)}
+@media (max-width:900px){.filters{grid-template-columns:1fr}}
+.story{display:flex;flex-direction:column;gap:10px;min-width:0}
+.story.noimg{display:none}
+.strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:var(--r-card);overscroll-behavior-x:contain}
+.strip::-webkit-scrollbar{display:none}
+.strip figure{margin:0;flex:0 0 100%;scroll-snap-align:center;aspect-ratio:1/1;background:#FFFFFF;border:1px solid var(--border);border-radius:var(--r-card);overflow:hidden}
+.strip img{width:100%;height:100%;object-fit:contain;display:block}
+.strip-ctl{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.strip-ctl .count{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;color:var(--text-2)}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.icon-btn:hover{background:var(--subtle)}
+.icon-btn svg{width:18px;height:18px}
+.now-top{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:16px;align-items:start}
+.poster-btn{position:relative;display:block;padding:0;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:#FFFFFF;cursor:pointer;aspect-ratio:1/1;width:100%}
+.poster-btn img{width:100%;height:100%;object-fit:cover;display:block}
+.poster-btn .chip{position:absolute;right:6px;bottom:6px;background:var(--btn-bg);color:var(--btn-fg)}
+.poster-btn.noimg{display:none}
+#storyDlg{max-width:620px;padding:20px}
+#storyDlg .dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+#storyDlg .dlg-head h2{margin:0;font-size:18px}
+.readtext summary{cursor:pointer;font-weight:700;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.readtext summary::-webkit-details-marker{display:none}
+.readtext summary::after{content:'펼치기';font-size:13px;color:var(--text-3);font-weight:600}
+.readtext[open] summary::after{content:'접기'}
+.readtext[open] summary{margin-bottom:16px}
+.card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.card-grid figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.card-grid img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border:1px solid var(--border);border-radius:var(--r-md);background:#FFFFFF;display:block}
+.card-grid figcaption{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:12px;color:var(--text-3)}
+@media (max-width:640px){.now-top{grid-template-columns:minmax(0,1fr) 96px}.card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .acct{display:flex;align-items:center;gap:4px;flex-shrink:0;font-size:14px;font-weight:700}
 .acct-name{white-space:nowrap}
 @media (max-width:640px){.acct-name .cap{display:none}}
@@ -96,6 +127,7 @@ main{padding-block:40px 96px;min-height:60vh}
 .card.pad-lg{padding:32px 40px}
 .well{background:var(--subtle);border-radius:var(--r-md);padding:16px 18px}
 .grid{display:grid;gap:16px}
+.grid>*,.stack>*{min-width:0}
 .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -148,6 +180,7 @@ main{padding-block:40px 96px;min-height:60vh}
 .msg{font-size:17px;line-height:1.75}
 .msg strong{color:var(--ink);box-shadow:inset 0 -0.45em 0 var(--accent-tint)}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
+.tags .chip{white-space:normal;height:auto;min-height:24px;padding:3px 10px;line-height:1.4;max-width:100%}
 
 /* timeline table */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface)}
@@ -284,13 +317,16 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 <main id="main" class="wrap" tabindex="-1" aria-live="polite" aria-busy="true"></main>
 <footer><div class="wrap"><span>인재경영실 · '27 MVC 가치체계 내재화 캠페인 「Winning Basic!」</span><span>규칙을 외우는 조직이 아니라, 규칙대로 일하는 조직이 이깁니다.</span></div></footer>
 <div id="toast" class="toast" role="status" hidden></div>
+<dialog id="storyDlg" aria-labelledby="storyDlgT">
+  <div class="dlg-head"><h2 id="storyDlgT"></h2><button type="button" class="icon-btn" id="storyDlgX" aria-label="스토리 카드 닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+  <div id="storyDlgBody"></div>
+</dialog>
 <dialog id="confirmDlg" aria-labelledby="dlgTitle" aria-describedby="dlgBody">
   <h2 id="dlgTitle"></h2>
   <p id="dlgBody" class="muted"></p>
   <div class="btns"><button type="button" class="btn sec2" value="cancel" id="dlgCancel">취소</button><button type="button" class="btn" id="dlgOk">확인</button></div>
 </dialog>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 /* =========================================================
    설정 — 구글 Apps Script 웹앱 URL을 넣으면 실서비스 모드로 전환됩니다.
@@ -431,7 +467,7 @@ const SURVEY = {
 };
 const POSITIONS = ['사원','주임','대리','과장','차장','부장','임원','기타'];
 const DUTIES = ['팀원','파트장','팀장','본부장 이상','기타'];
-const SURVEY_DAYS = 7;   // Survey 응답 기간: 4주차 금요일부터 7일
+const SURVEY_DAYS = 5;   // Survey 응답 기간: 4주차 금요일 ~ 다음 주 화요일 (스토리 카드 06 안내와 동일)
 const MIN_N = 3;         // 리더 솔선지수 공개 최소 응답 수
 
 /* ===================== 유틸 ===================== */
@@ -540,28 +576,29 @@ const mock = (()=>{
   let seed=20270104; const rnd=()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
   const pick=a=>a[Math.floor(rnd()*a.length)];
   const SUR='김이박최정강조윤장임한오서신권황안송류홍'.split(''); const GIV=['민준','서연','지호','하은','도윤','수아','예준','지민','시우','채원','준서','유진','현우','다은','건우','소윤','우진','지아','선우','나연','태윤','서진'];
-  const COS={'데모 A사':['경영지원팀','리테일영업팀','리스크관리팀','IT개발팀'],'데모 B사':['기획팀','여신심사팀','고객지원팀'],'데모 C사':['연구1팀','연구2팀','사업개발팀'],'데모 D사':['네트워크운영팀','솔루션영업팀','인사총무팀']};
+  const COS={'데모 A사':{'경영지원본부':['경영지원팀','IT개발팀'],'영업본부':['리테일영업팀','리스크관리팀']},'데모 B사':{'경영기획본부':['기획팀'],'여신본부':['여신심사팀','고객지원팀']},'데모 C사':{'연구본부':['연구1팀','연구2팀'],'사업본부':['사업개발팀']},'데모 D사':{'기술본부':['네트워크운영팀','솔루션영업팀'],'경영지원본부':['인사총무팀']}};
   const POS=['사원','대리','과장','차장','부장'];
   const roster=[];
-  Object.entries(COS).forEach(([co,teams])=>{ let no=1001; const L=co.slice(-2,-1);
-    teams.forEach(tm=>{ const n=5+Math.floor(rnd()*4); for(let i=0;i<n;i++){ roster.push({company:co,empno:L+(no++),name:pick(SUR)+pick(GIV),team:tm,position:i===0?'부장':pick(POS),duty:i===0?'팀장':'팀원',leader:i===0?'Y':'',initPw:''}); } });
+  Object.entries(COS).forEach(([co,divs])=>{ let no=1001; const L=co.slice(-2,-1);
+    Object.entries(divs).forEach(([dv,teams])=>{ roster.push({company:co,empno:L+(no++),name:pick(SUR)+pick(GIV),division:dv,team:'본부 직속',position:'임원',duty:'본부장',leader:'H',initPw:''}); teams.forEach(tm=>{ const n=5+Math.floor(rnd()*4); for(let i=0;i<n;i++){ roster.push({company:co,empno:L+(no++),name:pick(SUR)+pick(GIV),division:dv,team:tm,position:i===0?'부장':pick(POS),duty:i===0?'팀장':'팀원',leader:i===0?'Y':'',initPw:''}); } }); });
   });
   const hq=roster.find(r=>r.company==='데모 A사'&&r.team==='경영지원팀'&&!r.leader);
   const hr=roster.find(r=>r.company==='데모 B사'&&!r.leader);
   const lead=roster.find(r=>r.company==='데모 A사'&&r.team==='리테일영업팀'&&r.leader==='Y');
   const fresh=roster.find(r=>r.company==='데모 C사'&&!r.leader);
+  const divhead=roster.find(r=>r.company==='데모 A사'&&r.division==='영업본부'&&r.leader==='H');
   const DEMO_PW='demo1234';
   const db={settings:{startDate:'2026-08-24',skipWeeks:['2026-09-21']},roster,practice:[],submissions:[],recommends:[],surveyResp:[],surveyPart:[],openings:[],ops:[],
     auth:[{company:hq.company,empno:hq.empno,role:'HQ',scopeCompany:''},{company:hr.company,empno:hr.empno,role:'HR',scopeCompany:''}],
     accounts:{}};
   // 데모 운영자 계정은 비밀번호를 미리 바꿔 둔 상태로 시작합니다.
-  [hq,hr,lead].forEach(p=>db.accounts[p.company+'|'+p.empno]={pw:DEMO_PW,v:1,fails:0,lockUntil:0});
+  [hq,hr,lead,divhead].forEach(p=>db.accounts[p.company+'|'+p.empno]={pw:DEMO_PW,v:1,fails:0,lockUntil:0});
   const ts=d=>fmt(d)+' 10:00';
   const SAMPLE={1:[['엘리베이터에서 처음 보는 B사 분께 먼저 인사했더니, 다음 주 협업 회의에서 그분이 먼저 알아봐 주셔서 첫 회의가 훨씬 편했습니다.'],['아침마다 먼저 인사하는 팀장님 덕분에 팀 분위기가 밝아졌습니다. 저도 옆 팀에 먼저 인사하기 시작했어요.'],['스마트폰을 내려놓고 눈을 보고 인사했더니 짧은 대화로 이어졌고, 그 자리에서 업무 질문 하나가 풀렸습니다.']],
     2:[['주간회의에서 일정 리스크를 그 자리에서 말했습니다.','납기를 1주 앞당기는 대신 범위를 나누는 방향으로 결론이 바뀌었습니다.'],['회의 마지막 1분 질문에서 고객 클레임 가능성을 꺼냈습니다.','공지 문구를 사전에 수정해 문의가 줄었습니다.']]};
   const REASONS=['회의 끝 1분 질문을 팀에 처음 제안했습니다.','모르는 동료에게도 늘 먼저 인사합니다.','반대 의견을 회의 자리에서 근거와 함께 말해 결정을 더 좋게 만들었습니다.'];
   const sch=buildSchedule(db.settings.startDate, db.settings.skipWeeks);
-  const who=r=>({company:r.company,team:r.team,empno:r.empno,name:r.name});
+  const who=r=>({company:r.company,division:r.division,team:r.team,empno:r.empno,name:r.name});
   [[1,.74,.34,.62],[2,.41,.13,0]].forEach(([no,pr,sr,sv])=>{
     const s=sch[no-1], c=CAMPAIGNS[no-1];
     roster.forEach(r=>{
@@ -571,13 +608,13 @@ const mock = (()=>{
         const base = r.company==='데모 C사'?3.1:r.company==='데모 B사'?3.6:3.9;
         const sc=()=>Math.max(1,Math.min(5,Math.round(base+(rnd()-.4)*2.2)));
         db.surveyPart.push({ts:ts(s.fri4),campaign:no,...who(r)});
-        db.surveyResp.push({ts:fmt(s.fri4),campaign:no,company:r.company,team:r.team,position:r.position,duty:r.duty,q1:sc(),q2:sc(),q3:sc(),
+        db.surveyResp.push({ts:fmt(s.fri4),campaign:no,company:r.company,division:r.division,team:r.team,position:r.position,duty:r.duty,q1:sc(),q2:sc(),q3:sc(),
           good:rnd()<.25?pick(['먼저 인사하니 다른 계열사 분들과 대화가 늘었습니다.','팀장님이 먼저 인사하셔서 자연스럽게 따라 하게 됐습니다.','짧은 인사가 회의 분위기를 바꾼다는 걸 느꼈습니다.']):'',
           hard:rnd()<.18?pick(['층이 달라 다른 계열사 분들을 만날 기회가 적었습니다.','바쁜 주에는 잊게 됩니다. 중간 리마인드가 있으면 좋겠습니다.']):''});
       }
     });
     for(let i=0;i<(no===1?9:4);i++){ const a=pick(roster), b=pick(roster); if(a!==b) db.recommends.push({ts:ts(addD(s.start,8)),campaign:no,...who(a),targetCompany:b.company,targetTeam:b.team,targetName:b.name,reason:pick(REASONS)}); }
-    roster.filter(r=>r.leader==='Y'&&r!==lead).forEach(l=>{ if(rnd()<(no===1?.95:.8)) db.openings.push({ts:ts(s.stages[1].from),campaign:no,company:l.company,team:l.team,leader:l.name,plan:'매일 아침 스탠드업 전 1분, 이번 주 실천 사례를 한 명씩 나눕니다.',promise:'회의 마지막 1분 질문 고정',cycle:'매주',due:fmt(s.fri4)}); });
+    roster.filter(r=>r.leader==='Y'&&r!==lead).forEach(l=>{ if(rnd()<(no===1?.95:.8)) db.openings.push({ts:ts(s.stages[1].from),campaign:no,company:l.company,division:l.division,team:l.team,leader:l.name,plan:'매일 아침 스탠드업 전 1분, 이번 주 실천 사례를 한 명씩 나눕니다.',promise:'회의 마지막 1분 질문 고정',cycle:'매주',due:fmt(s.fri4)}); });
   });
   db.ops.push({campaign:1,stage:1,done:true,memo:''},{campaign:1,stage:2,done:true,memo:''},{campaign:1,stage:3,done:true,memo:''},{campaign:1,stage:4,done:true,memo:'C사 실천지수가 낮음. 층간 이동이 적은 사업장 특성 반영해 2번 캠페인은 팀 회의 안에서 실천하도록 안내.'},{campaign:2,stage:1,done:true,memo:''},{campaign:2,stage:2,done:true,memo:''});
 
@@ -586,9 +623,9 @@ const mock = (()=>{
   const person=(co,emp)=>roster.find(r=>r.company===String(co).trim()&&r.empno===String(emp).trim());
   const acc=p=>db.accounts[p.company+'|'+p.empno];
   const ver=p=>{ const a=acc(p); return a&&a.pw ? 'v'+a.v : 'INIT'; };
-  const profile=p=>{ const a=db.auth.find(x=>x.company===p.company&&x.empno===p.empno); let role='',sc='',st='';
-    if(a&&a.role==='HQ') role='HQ'; else if(a&&a.role==='HR'){ role='HR'; sc=a.scopeCompany||p.company; } else if(p.leader==='Y'){ role='LEADER'; sc=p.company; st=p.team; }
-    return {empno:p.empno,company:p.company,team:p.team,name:p.name,position:p.position,duty:p.duty,leader:p.leader,role,scopeCompany:sc,scopeTeam:st}; };
+  const profile=p=>{ const a=db.auth.find(x=>x.company===p.company&&x.empno===p.empno); let role='',sc='',sd='',st='';
+    if(a&&a.role==='HQ') role='HQ'; else if(a&&a.role==='HR'){ role='HR'; sc=a.scopeCompany||p.company; } else if(p.leader==='H'){ role='DIVHEAD'; sc=p.company; sd=p.division; } else if(p.leader==='Y'){ role='LEADER'; sc=p.company; sd=p.division; st=p.team; }
+    return {empno:p.empno,company:p.company,division:p.division,team:p.team,name:p.name,position:p.position,duty:p.duty,leader:p.leader,role,scopeCompany:sc,scopeDivision:sd,scopeTeam:st}; };
   const token=(p,must)=>'mock.'+[p.company,p.empno,ver(p),must?1:0].map(encodeURIComponent).join('.');
   function session(tk, allowMust){
     const f=String(tk||'').split('.'); if(f[0]!=='mock'||f.length!==5) throw apiError('로그인이 필요합니다','AUTH');
@@ -598,7 +635,7 @@ const mock = (()=>{
     if(m==='1'&&!allowMust) throw apiError('비밀번호를 먼저 변경하세요','MUST_CHANGE');
     return profile(p);
   }
-  const scopeFn=a=>r=>a.role==='HQ'||(r.company===a.scopeCompany&&(a.role==='HR'||r.team===a.scopeTeam));
+  const scopeFn=a=>r=>a.role==='HQ'||(r.company===a.scopeCompany&&(a.role==='HR'||(r.division===a.scopeDivision&&(a.role==='DIVHEAD'||r.team===a.scopeTeam))));
   const upsert=(arr,row,keys)=>{ const i=arr.findIndex(x=>keys.every(k=>String(x[k])===String(row[k]))); if(i>=0) arr[i]=row; else arr.push(row); };
   const H={
     login(b){
@@ -621,38 +658,39 @@ const mock = (()=>{
       return {token:token(p,false),mustChange:false,profile:profile(p)};
     },
     me(b){ const me=session(b.token); const mine=r=>r.company===me.company&&r.empno===me.empno;
-      return {profile:me,people:roster.filter(r=>!mine(r)).map(r=>({company:r.company,team:r.team,name:r.name})),
+      return {profile:me,people:roster.filter(r=>!mine(r)).map(r=>({company:r.company,division:r.division,team:r.team,name:r.name})),
         practice:db.practice.filter(mine),submissions:db.submissions.filter(mine),recommends:db.recommends.filter(mine),surveyDone:db.surveyPart.filter(mine).map(r=>r.campaign)}; },
     gallery(b){ session(b.token); const no=Number(b.campaign);
       return {submissions:db.submissions.filter(s=>s.campaign===no&&s.public).map(({ts,company,team,name,fields,link})=>({ts,company,team,name,fields,link})),
         recommends:db.recommends.filter(s=>s.campaign===no).map(({ts,targetCompany,targetTeam,targetName,reason,company})=>({ts,targetCompany,targetTeam,targetName,reason,company}))}; },
     write(action,b){
       const me=session(b.token), no=Number(b.campaign), now=fmt(today())+' '+new Date().toTimeString().slice(0,5);
-      const base={ts:now,campaign:no,company:me.company,team:me.team,empno:me.empno,name:me.name};
+      const base={ts:now,campaign:no,company:me.company,division:me.division,team:me.team,empno:me.empno,name:me.name};
       if(action==='practice') upsert(db.practice,{...base,checks:b.checks,note:b.note||''},['campaign','company','empno']);
       else if(action==='submit') db.submissions.push({...base,fields:JSON.stringify(b.fields),link:b.link||'',public:!!b.public});
       else if(action==='recommend') db.recommends.push({...base,targetCompany:b.targetCompany,targetTeam:b.targetTeam,targetName:b.targetName,reason:b.reason});
       else if(action==='survey'){
         if(db.surveyPart.some(r=>r.campaign===no&&r.company===me.company&&r.empno===me.empno)) throw apiError('이미 이번 캠페인 Survey에 응답했습니다');
         db.surveyPart.push(base);
-        db.surveyResp.push({ts:fmt(today()),campaign:no,company:me.company,team:me.team,position:b.position,duty:b.duty,q1:b.q1,q2:b.q2,q3:b.q3,good:b.good||'',hard:b.hard||''});
+        db.surveyResp.push({ts:fmt(today()),campaign:no,company:me.company,division:me.division,team:me.team,position:b.position,duty:b.duty,q1:b.q1,q2:b.q2,q3:b.q3,good:b.good||'',hard:b.hard||''});
       } else if(action==='opening'){
         if(me.role!=='LEADER') throw apiError('팀 리더만 등록할 수 있습니다');
-        upsert(db.openings,{ts:now,campaign:no,company:me.company,team:me.team,leader:me.name,plan:b.plan,promise:b.promise,cycle:b.cycle,due:b.due},['campaign','company','team']);
+        upsert(db.openings,{ts:now,campaign:no,company:me.company,division:me.division,team:me.team,leader:me.name,plan:b.plan,promise:b.promise,cycle:b.cycle,due:b.due},['campaign','company','division','team']);
       }
       return {saved:true};
     },
     adminData(b){
       const a=session(b.token); if(!a.role) throw apiError('운영자 권한이 없습니다');
       const no=Number(b.campaign), f=scopeFn(a), byNo=r=>r.campaign===no&&f(r);
-      let sr=db.surveyResp.filter(byNo); if(a.role==='LEADER'&&sr.length<MIN_N) sr=sr.map(r=>({...r,q2:null}));
+      let sr=db.surveyResp.filter(byNo); if(a.role==='LEADER'||a.role==='DIVHEAD'){ const cnt={}; sr.forEach(r=>{ const k=r.division+'|'+r.team; cnt[k]=(cnt[k]||0)+1; }); sr=sr.map(r=>cnt[r.division+'|'+r.team]<MIN_N?{...r,q2:null}:r); }
       const rost=roster.filter(f);
-      const annual=CAMPAIGNS.map(c=>{ const ppl=new Set([...db.practice,...db.submissions].filter(r=>r.campaign===c.no&&f(r)).map(r=>r.company+'|'+r.empno));
-        const rr=db.surveyResp.filter(r=>r.campaign===c.no&&f(r));
-        return {campaign:c.no,target:rost.length,participants:ppl.size,surveyN:rr.length,q1:avg(rr.map(r=>r.q1)),q2:(a.role==='LEADER'&&rr.length<MIN_N)?null:avg(rr.map(r=>r.q2)),q3:avg(rr.map(r=>r.q3))}; });
+      const cell={}, get=(c,r)=>{ const k=[c,r.company,r.division,r.team].join('|'); return cell[k]=cell[k]||{campaign:c,company:r.company,division:r.division,team:r.team,ppl:new Set(),participants:0,n:0,s1:0,s2:0,s3:0}; };
+      [...db.practice,...db.submissions].filter(f).forEach(r=>{ const g=get(r.campaign,r); if(!g.ppl.has(r.empno)){ g.ppl.add(r.empno); g.participants++; } });
+      db.surveyResp.filter(f).forEach(r=>{ const g=get(r.campaign,r); g.n++; g.s1+=r.q1; g.s2+=r.q2; g.s3+=r.q3; });
+      const annualDetail=Object.values(cell).map(({ppl,...g})=>(a.role==='LEADER'||a.role==='DIVHEAD')&&g.n<MIN_N?{...g,s2:null}:g);
       return {role:a.role,company:a.scopeCompany,team:a.scopeTeam,settings:db.settings,roster:rost.map(({initPw,...r})=>r),
         practice:db.practice.filter(byNo),submissions:db.submissions.filter(byNo),recommends:db.recommends.filter(byNo),
-        surveyPart:db.surveyPart.filter(byNo),surveyResp:sr,openings:db.openings.filter(byNo),ops:db.ops,annual};
+        surveyPart:db.surveyPart.filter(byNo),surveyResp:sr,openings:db.openings.filter(byNo),ops:db.ops,annualDetail};
     },
     saveSettings(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); db.settings={startDate:b.startDate,skipWeeks:b.skipWeeks}; return {saved:true}; },
     opsUpdate(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); upsert(db.ops,{campaign:b.campaign,stage:b.stage,done:!!b.done,memo:b.memo||''},['campaign','stage']); return {saved:true}; },
@@ -662,7 +700,7 @@ const mock = (()=>{
       delete db.accounts[t.company+'|'+t.empno]; return {name:t.name,company:t.company}; }
   };
   return {
-    demoAccounts:{hq,hr,lead,fresh,pw:DEMO_PW},
+    demoAccounts:{hq,hr,lead,divhead,fresh,pw:DEMO_PW},
     bootstrap(){ return out({settings:db.settings,companies:[...new Set(roster.map(r=>r.company))]}); },
     call(action,b){
       try{
@@ -689,11 +727,11 @@ const state = {
 function setSession(s){
   state.session=s;
   const p=s&&s.profile;
-  state.auth = p&&p.role ? {role:p.role, company:p.scopeCompany, team:p.scopeTeam} : null;
+  state.auth = p&&p.role ? {role:p.role, company:p.scopeCompany, division:p.scopeDivision, team:p.scopeTeam} : null;
   if(s&&!s.mustChange) store.set('session',{token:s.token,profile:s.profile,mustChange:false}); else store.del('session');
   renderAcct();
 }
-function clearSession(){ state.session=null; state.auth=null; state.people=[]; state.adminNo=null; state.adminTab='run'; store.del('session'); renderAcct(); }
+function clearSession(){ state.fCo=state.fDiv=state.fTeam=''; state.session=null; state.auth=null; state.people=[]; state.adminNo=null; state.adminTab='run'; store.del('session'); renderAcct(); }
 const prof = () => state.session && state.session.profile;
 const peopleCos = () => [...new Set(state.people.map(r=>r.company))];
 const peopleTeams = co => [...new Set(state.people.filter(r=>r.company===co).map(r=>r.team))];
@@ -713,8 +751,46 @@ function campHead(c, small){
   const s=state.schedule[c.no-1];
   return `<div class="row"><span class="chip acc">${esc(c.tag)}</span><span class="chip line">${c.q}분기 「${esc(QUARTERS[c.q-1].title)}」</span>${s?`<span class="cap num">${wkLabel(c.no)} · ${range(s)}</span>`:''}</div>`;
 }
-function whoLine(){ const p=prof(); return p ? `<p class="muted"><b style="color:var(--ink)">${esc(p.name)}</b> · ${esc(p.company)} ${esc(p.team)}</p>` : ''; }
+function whoLine(){ const p=prof(); return p ? `<p class="muted"><b style="color:var(--ink)">${esc(p.name)}</b> · ${esc(orgLabel(p,'team'))}</p>` : ''; }
 function emptyBox(title, desc, action){ return `<div class="empty"><h3 style="font-size:18px">${esc(title)}</h3><p class="muted">${esc(desc)}</p>${action||''}</div>`; }
+
+/* ===================== 스토리 카드 ===================== */
+const CARD_BASE='cards/';   // GitHub 저장소의 cards 폴더 (cards/01/0.webp ~ 6.webp, 0.png ~ 6.png, WinningBasic_01_cards.zip)
+const cardSrc=(no,i,ext='webp')=>`${CARD_BASE}${two(no)}/${i}.${ext}`;
+const cardName=(no,i)=>`WinningBasic_${two(no)}_${i===0?'00_메인포스터':two(i)+'_스토리카드'}.png`;
+const ARROW={prev:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  next:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
+function storyStrip(no,id){
+  const c=CAMPAIGNS[no-1];
+  const alts=[`캠페인 ${two(no)} 메인 포스터: 「${c.slogan}」`,...[1,2,3,4,5,6].map(i=>`캠페인 ${two(no)} 스토리 카드 ${i} / 6`)];
+  return `<section class="story" aria-roledescription="carousel" aria-label="캠페인 ${two(no)} 스토리 카드 7장">
+    <div class="strip" id="strip-${id}" data-cnt="cnt-${id}" tabindex="0" aria-label="좌우로 넘겨 보세요. 방향키로도 넘길 수 있습니다">
+      ${alts.map((a,i)=>`<figure aria-roledescription="slide" aria-label="${i+1} / 7"><img src="${cardSrc(no,i)}" alt="${esc(a)}" width="1080" height="1080" loading="${i<2?'eager':'lazy'}" decoding="async" onerror="this.closest('.story').classList.add('noimg')"></figure>`).join('')}
+    </div>
+    <div class="strip-ctl"><button type="button" class="icon-btn" data-act="stripMove" data-dir="-1" data-id="${id}" aria-label="이전 카드">${ARROW.prev}</button><span class="count" id="cnt-${id}" aria-live="polite">1 / 7</span><button type="button" class="icon-btn" data-act="stripMove" data-dir="1" data-id="${id}" aria-label="다음 카드">${ARROW.next}</button></div>
+  </section>`;
+}
+function posterBtn(no){
+  return `<button type="button" class="poster-btn" data-act="openStory" data-no="${no}" aria-label="캠페인 ${two(no)} 스토리 카드 7장 보기"><img src="${cardSrc(no,0)}" alt="" width="1080" height="1080" onerror="this.parentNode.classList.add('noimg')"><span class="chip">카드 7장</span></button>`;
+}
+function openStory(no){
+  const d=$('#storyDlg'); if(typeof d.showModal!=='function'){ location.hash='c'+two(no); return; }
+  $('#storyDlgT').textContent=`캠페인 ${two(no)} · 「${CAMPAIGNS[no-1].slogan}」`;
+  $('#storyDlgBody').innerHTML=storyStrip(no,'dlg')+`<div class="btns" style="margin-top:14px;justify-content:flex-end"><a class="btn sec2 sm" href="#c${two(no)}" data-act="closeStory">캠페인 자세히 보기</a><a class="btn sm" href="#join" data-act="closeStory">참여하기</a></div>`;
+  d.showModal(); $('#strip-dlg').focus();
+  store.set('story_'+no, true);
+}
+function closeStory(){ const d=$('#storyDlg'); if(d.open) d.close(); }
+function maybeAutoStory(route){
+  if(route!=='home'&&route!=='join') return;
+  if(state.session&&state.session.mustChange) return;
+  const c=activeCampaign(); if(!c||store.get('story_'+c.no)) return;
+  const img=new Image(); img.onload=()=>{ if(!$('#storyDlg').open&&!$('#confirmDlg').open) openStory(c.no); }; img.src=cardSrc(c.no,0);
+}
+document.addEventListener('scroll',e=>{
+  const el=e.target; if(!el.classList||!el.classList.contains('strip')) return;
+  const i=Math.round(el.scrollLeft/Math.max(1,el.clientWidth)); const c=document.getElementById(el.dataset.cnt); if(c) c.textContent=`${i+1} / 7`;
+},true);
 
 /* ===================== 화면: 홈 ===================== */
 function viewHome(){
@@ -722,16 +798,18 @@ function viewHome(){
   if(n.phase==='run'){
     const c=CAMPAIGNS[n.cur.no-1]; const st=STAGES[n.stage-1];
     now=`<article class="card pad-lg now" aria-labelledby="nowTitle">
-      <div class="row between"><span class="label">지금 진행 중 · ${n.week?n.week+'주차':'휴무 주'}</span><span class="big-no num" aria-hidden="true">${two(c.no)}</span></div>
-      ${campHead(c)}
-      <h2 class="slogan" id="nowTitle">「${esc(c.slogan)}」</h2>
+      <div class="now-top"><div class="stack" style="gap:12px">
+        <span class="label">지금 진행 중 · ${n.week?n.week+'주차':'휴무 주'} · <span class="num">${two(c.no)}</span></span>
+        ${campHead(c)}
+        <h2 class="slogan" id="nowTitle">「${esc(c.slogan)}」</h2>
+      </div>${posterBtn(c.no)}</div>
       <p class="muted">${esc(c.agenda)}</p>
       <div class="well"><span class="cap">오늘 단계</span><br><b>${st.k}. ${esc(st.title)}</b> <span class="cap">· ${esc(st.when)}</span></div>
       <div class="btns"><a class="btn" href="#join">이번 캠페인 참여하기</a><a class="btn sec2" href="#c${two(c.no)}">캠페인 자세히 보기</a>${n.stage===4?'<a class="btn sec2" href="#survey">Survey 응답하기</a>':''}</div>
     </article>`;
   } else if(n.phase==='before'||n.phase==='gap'){
     const c=CAMPAIGNS[n.next.no-1];
-    now=`<article class="card pad-lg now"><span class="label">곧 시작 · D-${n.days}</span>${campHead(c)}<h2 class="slogan">「${esc(c.slogan)}」</h2><p class="muted">${ymd(n.next.start)} 월요일, 스토리 카드 발송과 함께 시작합니다.</p><div class="btns"><a class="btn" href="#c${two(c.no)}">첫 캠페인 미리 보기</a></div></article>`;
+    now=`<article class="card pad-lg now"><div class="now-top"><div class="stack" style="gap:12px"><span class="label">곧 시작 · D-${n.days}</span>${campHead(c)}<h2 class="slogan">「${esc(c.slogan)}」</h2></div>${posterBtn(c.no)}</div><p class="muted">${ymd(n.next.start)} 월요일, 스토리 카드 발송과 함께 시작합니다.</p><div class="btns"><a class="btn" href="#c${two(c.no)}">첫 캠페인 미리 보기</a></div></article>`;
   } else {
     now=`<article class="card pad-lg now"><span class="label">'27년 캠페인 종료</span><h2 class="slogan">한 해 동안 함께해 주셔서 감사합니다</h2><div class="btns"><a class="btn" href="#cases">사례 모아보기</a></div></article>`;
   }
@@ -795,32 +873,32 @@ function viewCampaign(no){
       <h1 class="slogan">「${esc(c.slogan)}」</h1>
       ${c.rule?`<p class="h3t">Rule ${c.rule}. ${esc(RULES[c.rule])}</p>`:`<p class="h3t">${c.tag==='기본'?'기본이지만 어려운 · 존중의 출발점':'「+α 한 걸음 더」 이기는 기본'}</p>`}
     </header>
-    <div class="grid g2">
-      <section class="card stack" aria-labelledby="agTitle" style="gap:18px">
-        <span class="label" id="agTitle">아젠다</span>
-        <p class="agenda">${esc(c.agenda)}</p>
-        <ul class="acts">${c.actions.map((a,i)=>`<li><span class="i num" aria-hidden="true">${i+1}</span><span>${esc(a)}</span></li>`).join('')}</ul>
-      </section>
-      <section class="card stack" aria-labelledby="stTitle" style="gap:14px">
-        <span class="label" id="stTitle">상황</span>
-        <p class="story">${esc(c.situation)}</p>
-      </section>
+    <div class="grid g2" style="align-items:start">
+      ${storyStrip(no,'d')}
+      <div class="stack" style="gap:16px">
+        <section class="card stack" aria-labelledby="agTitle" style="gap:18px">
+          <span class="label" id="agTitle">아젠다</span>
+          <p class="agenda">${esc(c.agenda)}</p>
+          <ul class="acts">${c.actions.map((a,i)=>`<li><span class="i num" aria-hidden="true">${i+1}</span><span>${esc(a)}</span></li>`).join('')}</ul>
+        </section>
+        <section class="card stack" style="gap:12px" aria-labelledby="schTitle">
+          <span class="label" id="schTitle">이번 캠페인 4주 일정</span>
+          ${s?`<ul class="acts">${STAGES.map((g,i)=>{const x=s.stages[i];return `<li><span class="i num" aria-hidden="true">${g.k}</span><span><b>${esc(g.title)}</b> <span class="cap num">· ${+x.from===+x.to?md(x.from):md(x.from)+' ~ '+md(x.to)}</span></span></li>`;}).join('')}</ul>`:'<p class="muted">일정이 아직 정해지지 않았습니다.</p>'}
+        </section>
+      </div>
     </div>
-    <section class="card pad-lg stack" aria-labelledby="msgTitle" style="gap:14px">
-      <span class="label" id="msgTitle">메시지</span>
-      <p class="msg">${bold(c.message)}</p>
+    <details class="card readtext">
+      <summary>스토리 글로 읽기 · 상황과 메시지</summary>
+      <div class="stack" style="gap:20px">
+        <div class="stack" style="gap:8px"><span class="label">상황</span><p class="story">${esc(c.situation)}</p></div>
+        <div class="stack" style="gap:8px"><span class="label">메시지</span><p class="msg">${bold(c.message)}</p></div>
+      </div>
+    </details>
+    <section class="card stack" style="gap:12px" aria-labelledby="opTitle">
+      <span class="label" id="opTitle">함께 운영하는 장치</span>
+      <div class="tags">${c.ops.map(o=>`<span class="chip line">#${esc(o)}</span>`).join('')}</div>
+      <p class="cap">결과물 양식: ${c.submit.map(esc).join(' / ')}</p>
     </section>
-    <div class="grid g2">
-      <section class="card stack" style="gap:12px" aria-labelledby="schTitle">
-        <span class="label" id="schTitle">이번 캠페인 4주 일정</span>
-        ${s?`<ul class="acts">${STAGES.map((g,i)=>{const x=s.stages[i];return `<li><span class="i num" aria-hidden="true">${g.k}</span><span><b>${esc(g.title)}</b> <span class="cap num">· ${x.from===x.to||+x.from===+x.to?md(x.from):md(x.from)+' ~ '+md(x.to)}</span></span></li>`;}).join('')}</ul>`:'<p class="muted">일정이 아직 정해지지 않았습니다.</p>'}
-      </section>
-      <section class="card stack" style="gap:12px" aria-labelledby="opTitle">
-        <span class="label" id="opTitle">함께 운영하는 장치</span>
-        <div class="tags">${c.ops.map(o=>`<span class="chip line">#${esc(o)}</span>`).join('')}</div>
-        <p class="cap">결과물 양식: ${c.submit.map(esc).join(' / ')}</p>
-      </section>
-    </div>
     <div class="btns">${st==='run'?'<a class="btn" href="#join">이번 캠페인 참여하기</a>':''}${prev?`<a class="btn sec2" href="#c${two(prev.no)}">← ${two(prev.no)} ${esc(prev.name)}</a>`:''}${next?`<a class="btn sec2" href="#c${two(next.no)}">${two(next.no)} ${esc(next.name)} →</a>`:''}</div>
   </div>`;
 }
@@ -849,6 +927,7 @@ function viewLogin(){
       <tr><td>첫 로그인 (비밀번호 변경)</td><td>${esc(d.fresh.company)}</td><td class="num">${esc(d.fresh.empno)}</td><td class="num">${esc(d.fresh.empno)}</td></tr>
       <tr><td>인재경영실</td><td>${esc(d.hq.company)}</td><td class="num">${esc(d.hq.empno)}</td><td class="num">${d.pw}</td></tr>
       <tr><td>계열사 HR</td><td>${esc(d.hr.company)}</td><td class="num">${esc(d.hr.empno)}</td><td class="num">${d.pw}</td></tr>
+      <tr><td>본부장 (영업본부)</td><td>${esc(d.divhead.company)}</td><td class="num">${esc(d.divhead.empno)}</td><td class="num">${d.pw}</td></tr>
       <tr><td>팀 리더</td><td>${esc(d.lead.company)}</td><td class="num">${esc(d.lead.empno)}</td><td class="num">${d.pw}</td></tr>
     </tbody></table></div></aside>`:''}
   </div>`;
@@ -928,7 +1007,7 @@ async function viewSurvey(){
   const s=surveyOpenFor();
   if(!s){
     const n=nowInfo(); const sch = n.phase==='run'? n.cur : n.next;
-    return `<div class="stack">${whoLine()}${emptyBox('지금은 Survey 기간이 아닙니다', sch?`캠페인 ${two(sch.no)} Survey는 ${ymd(sch.surveyFrom)}(금)부터 ${SURVEY_DAYS}일간 열립니다.`:'올해 Survey가 모두 끝났습니다.', `<a class="btn" href="#join">실천 체크하러 가기</a>`)}</div>`;
+    return `<div class="stack">${whoLine()}${emptyBox('지금은 Survey 기간이 아닙니다', sch?`캠페인 ${two(sch.no)} Survey는 ${ymd(sch.surveyFrom)}(금)부터 ${ymd(sch.surveyTo)}(화)까지 열립니다.`:'올해 Survey가 모두 끝났습니다.', `<a class="btn" href="#join">실천 체크하러 가기</a>`)}</div>`;
   }
   const c=CAMPAIGNS[s.no-1]; const my=await loadMe(); const p=prof();
   if(my.surveyDone.includes(c.no)) return `<div class="stack">${whoLine()}${emptyBox('응답해 주셔서 감사합니다', `캠페인 ${two(c.no)} Survey에 이미 응답했습니다. 결과는 캠페인 종료 후 공유됩니다.`, `<a class="btn" href="#cases">동료 사례 보기</a>`)}</div>`;
@@ -1007,23 +1086,23 @@ function viewGuide(){
         <article class="kpi"><span class="kpi-l">리더 솔선지수</span><span class="kpi-v">② <small>5점 만점</small></span><span class="kpi-s">${esc(SURVEY.q2)} 응답 ${MIN_N}명 미만 팀은 비공개</span></article>
         <article class="kpi"><span class="kpi-l">캠페인 효과</span><span class="kpi-v">③ <small>5점 만점</small></span><span class="kpi-s">${esc(SURVEY.q3)}</span></article>
       </div>
-      <p class="cap">참여율 = 이번 캠페인에 실천 체크 또는 결과물을 남긴 인원 ÷ 명단 인원. Survey는 4주차 금요일부터 ${SURVEY_DAYS}일간 열립니다.</p>
+      <p class="cap">참여율 = 이번 캠페인에 실천 체크 또는 결과물을 남긴 인원 ÷ 명단 인원. Survey는 4주차 금요일에 열리고 다음 주 화요일에 마감합니다.</p>
     </section>
   </div>`;
 }
 
 /* ===================== 화면: 운영자 ===================== */
-const ROLE_NAME={HQ:'인재경영실',HR:'계열사 HR',LEADER:'현업 리더'};
+const ROLE_NAME={HQ:'인재경영실',HR:'계열사 HR',DIVHEAD:'본부장',LEADER:'현업 리더'};
 async function viewAdmin(){
   const g=gate(); if(g) return g;
   if(!state.auth) return emptyBox('운영자 권한이 없습니다','운영 화면은 인재경영실 · 계열사 HR · 팀 리더만 볼 수 있습니다. 권한이 필요하면 인재경영실에 요청하세요.','<a class="btn" href="#join">캠페인 참여하기</a>');
   const n=nowInfo();
   if(!state.adminNo) state.adminNo = n.phase==='run'? n.cur.no : (n.next? n.next.no : 13);
   const no=state.adminNo;
-  const data = await api.call('adminData',{campaign:no});
+  const data = normOrg(await api.call('adminData',{campaign:no}));
   state.adminData=data;
-  const a=state.auth; const scope = a.role==='HQ'?'그룹 전체':a.role==='HR'?a.company:`${a.company} ${a.team}`;
-  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role!=='LEADER') tabs.push(['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['settings','일정 설정']);
+  const a=state.auth; const scope = a.role==='HQ'?'그룹 전체':a.role==='HR'?a.company:a.role==='DIVHEAD'?`${a.company} ${a.division}`:`${a.company} ${a.team}`;
+  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role==='HQ'||a.role==='HR') tabs.push(['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['settings','일정 설정']);
   if(!tabs.some(t=>t[0]===state.adminTab)) state.adminTab='run';
   let body='';
   if(state.adminTab==='year') body=adminYear(data);
@@ -1048,27 +1127,78 @@ function adminAccounts(){
     <div class="row between"><span class="status" id="rpStatus" role="status"></span><button class="btn" type="submit">초기화</button></div>
   </form>`;
 }
-function aggregate(d){
-  const roster=d.roster; const teams={};
-  roster.forEach(r=>{ const k=r.company+'|'+r.team; (teams[k]=teams[k]||{company:r.company,team:r.team,target:0,leader:''}).target++; if(r.leader==='Y') teams[k].leader=r.name; });
-  const part=new Set([...d.practice,...d.submissions].map(r=>key(r.company,r.team,r.empno||r.name)));
-  const by=(fn)=>{ const m={}; Object.values(teams).forEach(t=>{ const k=fn(t); const x=m[k]=m[k]||{label:k,target:0,part:0,subs:0,recs:0,svN:0,q1:[],q2:[],q3:[],teams:0,opened:0}; x.target+=t.target; x.teams++; }); return m; };
-  const byCo=by(t=>t.company), byTeam=by(t=>t.company+' · '+t.team);
-  const add=(m,k,f)=>{ if(m[k]) f(m[k]); };
-  part.forEach(p=>{ const [co,tm]=p.split('|'); add(byCo,co,x=>x.part++); add(byTeam,co+' · '+tm,x=>x.part++); });
-  d.submissions.forEach(s=>{ add(byCo,s.company,x=>x.subs++); add(byTeam,s.company+' · '+s.team,x=>x.subs++); });
-  d.recommends.forEach(s=>{ add(byCo,s.company,x=>x.recs++); add(byTeam,s.company+' · '+s.team,x=>x.recs++); });
-  d.surveyResp.forEach(s=>{ [byCo[s.company],byTeam[s.company+' · '+s.team]].forEach(x=>{ if(!x) return; x.svN++; x.q1.push(s.q1); if(s.q2!=null) x.q2.push(s.q2); x.q3.push(s.q3); }); });
-  const openedTeams=new Set(d.openings.map(o=>o.company+' · '+o.team));
-  Object.values(byTeam).forEach(x=>{ x.opened=openedTeams.has(x.label)?1:0; });
-  Object.values(byCo).forEach(x=>{ x.opened=Object.values(byTeam).filter(t=>t.label.startsWith(x.label+' · ')&&t.opened).length; });
-  const target=roster.length;
-  const sv=d.surveyResp;
-  return {target, part:part.size, subs:d.submissions.length, recs:d.recommends.length, svN:d.surveyPart.length,
-    q1:avg(sv.map(s=>s.q1)), q2:avg(sv.filter(s=>s.q2!=null).map(s=>s.q2)), q2n:sv.filter(s=>s.q2!=null).length, q3:avg(sv.map(s=>s.q3)),
-    teams:Object.values(byTeam).map(t=>{ const tt=teams[t.label.replace(' · ','|')]||{}; return {...t,leader:tt.leader}; }), cos:Object.values(byCo), teamCount:Object.keys(teams).length, opened:openedTeams.size,
-    good:sv.filter(s=>s.good).map(s=>({t:s.good,co:s.company})), hard:sv.filter(s=>s.hard).map(s=>({t:s.hard,co:s.company}))};
+/* ===== 조직(그룹사 · 본부 · 팀) 필터와 집계 ===== */
+const DIV_NONE='본부 미지정';
+const LEVEL_NAME={company:'계열사',division:'본부',team:'팀'};
+function orgLabel(r,level){
+  const dv=r.division&&r.division!==DIV_NONE ? r.division : '';
+  if(level==='company') return r.company;
+  if(level==='division') return `${r.company} · ${r.division||DIV_NONE}`;
+  return [r.company,dv,r.team].filter(Boolean).join(' · ');
 }
+function orgKey(r,level){ return level==='company'? r.company : level==='division'? r.company+'|'+(r.division||DIV_NONE) : r.company+'|'+(r.division||DIV_NONE)+'|'+r.team; }
+function normOrg(d){
+  const fix=a=>(a||[]).forEach(r=>{ r.division=r.division||DIV_NONE; r.team=r.team||'팀 미지정'; });
+  ['roster','practice','submissions','recommends','surveyPart','surveyResp','openings','annualDetail'].forEach(k=>fix(d[k]));
+  return d;
+}
+function curFilter(){
+  const a=state.auth, f={co:state.fCo||'',div:state.fDiv||'',team:state.fTeam||''};
+  if(a.role==='HR') f.co=a.company;
+  if(a.role==='DIVHEAD'){ f.co=a.company; f.div=a.division||DIV_NONE; }
+  if(a.role==='LEADER'){ f.co=a.company; f.div=a.division||DIV_NONE; f.team=a.team; }
+  return f;
+}
+const matchF = f => r => (!f.co||r.company===f.co) && (!f.div||(r.division||DIV_NONE)===f.div) && (!f.team||r.team===f.team);
+const subLevel = f => !f.co ? 'company' : !f.div ? 'division' : 'team';
+function scopeText(f){ return !f.co ? '그룹 전체' : !f.div ? f.co : !f.team ? `${f.co} · ${f.div}` : orgLabel({company:f.co,division:f.div,team:f.team},'team'); }
+function filterData(d,f){
+  const m=matchF(f), pick=a=>(a||[]).filter(m);
+  return {...d, roster:pick(d.roster), practice:pick(d.practice), submissions:pick(d.submissions), recommends:pick(d.recommends),
+    surveyPart:pick(d.surveyPart), surveyResp:pick(d.surveyResp), openings:pick(d.openings), annualDetail:pick(d.annualDetail)};
+}
+function filterBar(d){
+  const a=state.auth, f=curFilter();
+  if(a.role==='LEADER') return `<p class="cap">조회 범위 · <b style="color:var(--ink)">${esc(scopeText(f))}</b></p>`;
+  const uniq=arr=>[...new Set(arr)];
+  const cos=uniq(d.roster.map(r=>r.company));
+  const divs=f.co?uniq(d.roster.filter(r=>r.company===f.co).map(r=>r.division)):[];
+  const teams=f.co&&f.div?uniq(d.roster.filter(r=>r.company===f.co&&r.division===f.div).map(r=>r.team)):[];
+  const o=(list,sel)=>list.map(v=>`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(v)}</option>`).join('');
+  const canReset = (a.role==='HQ'&&f.co) || (a.role==='HR'&&f.div) || f.team;
+  return `<div class="filters" role="group" aria-label="조회 범위">
+    <div class="field"><label for="fCo">그룹사</label><select id="fCo" data-change="fCo" ${a.role!=='HQ'?'disabled aria-describedby="hfCo"':''}>${a.role==='HQ'?'<option value="">그룹 전체</option>':''}${o(cos,f.co)}</select>${a.role!=='HQ'?`<span class="help" id="hfCo">${a.role==='HR'?'담당 계열사만':'소속 본부만'} 조회할 수 있습니다</span>`:''}</div>
+    <div class="field"><label for="fDiv">본부</label><select id="fDiv" data-change="fDiv" ${f.co&&a.role!=='DIVHEAD'?'':'disabled'}><option value="">${f.co?'본부 전체':'그룹사를 먼저 고르세요'}</option>${o(divs,f.div)}</select></div>
+    <div class="field"><label for="fTeam">팀</label><select id="fTeam" data-change="fTeam" ${f.div?'':'disabled'}><option value="">${f.div?'팀 전체':'본부를 먼저 고르세요'}</option>${o(teams,f.team)}</select></div>
+    ${canReset?'<button type="button" class="btn ghost sm" data-act="fReset">범위 초기화</button>':''}
+  </div>`;
+}
+/* 집계: level = 하위 조직 단위(표의 행) */
+function aggregate(d, level){
+  const mk=(r,lv)=>({key:orgKey(r,lv),label:orgLabel(r,lv),target:0,part:0,subs:0,recs:0,svN:0,q1:[],q2:[],q3:[],teams:0,opened:0,leader:''});
+  const groups={}, teams={};
+  const G=(store,r,lv)=>{ const k=orgKey(r,lv); return store[k]=store[k]||mk(r,lv); };
+  const inc=(r,field)=>{ const g=groups[orgKey(r,level)], t=teams[orgKey(r,'team')]; if(g) g[field]++; if(t&&level!=='team') t[field]++; };
+  d.roster.forEach(r=>{ G(groups,r,level).target++; const t=G(teams,r,'team'); if(level!=='team') t.target++; if(r.leader==='Y') t.leader=r.name; });
+  if(level==='team') Object.keys(teams).forEach(k=>{ groups[k].leader=teams[k].leader; teams[k]=groups[k]; });
+  Object.values(teams).forEach(t=>{ const g=groups[t.key.split('|').slice(0, level==='company'?1:level==='division'?2:3).join('|')]; if(g&&level!=='team'&&t.leader) g.teams++; });
+  if(level==='team') Object.values(groups).forEach(g=>g.teams=g.leader?1:0);
+  const part=new Map(); [...d.practice,...d.submissions].forEach(r=>part.set(r.company+'|'+r.empno,r));
+  part.forEach(r=>inc(r,'part'));
+  d.submissions.forEach(r=>inc(r,'subs'));
+  d.recommends.forEach(r=>inc(r,'recs'));
+  d.surveyResp.forEach(s=>{ const xs=[groups[orgKey(s,level)]]; if(level!=='team') xs.push(teams[orgKey(s,'team')]);
+    xs.forEach(x=>{ if(!x) return; x.svN++; x.q1.push(s.q1); if(s.q2!=null) x.q2.push(s.q2); x.q3.push(s.q3); }); });
+  const opened=new Set(d.openings.map(o=>orgKey(o,'team')));
+  Object.values(teams).forEach(t=>{ t.opened=opened.has(t.key)?1:0; });
+  if(level!=='team') Object.values(teams).forEach(t=>{ if(!t.opened) return; const g=groups[t.key.split('|').slice(0, level==='company'?1:2).join('|')]; if(g) g.opened++; });
+  const sv=d.surveyResp;
+  return {level, target:d.roster.length, part:part.size, subs:d.submissions.length, recs:d.recommends.length, svN:d.surveyPart.length,
+    q1:avg(sv.map(s=>s.q1)), q2:avg(sv.filter(s=>s.q2!=null).map(s=>s.q2)), q2n:sv.filter(s=>s.q2!=null).length, q3:avg(sv.map(s=>s.q3)),
+    groups:Object.values(groups), teams:Object.values(teams), teamCount:Object.values(teams).filter(t=>!t.key.endsWith('|본부 직속')).length, ledCount:Object.values(teams).filter(t=>t.leader).length, opened:Object.values(teams).filter(t=>t.opened).length,
+    good:sv.filter(s=>s.good).map(s=>({t:s.good,org:orgLabel(s,'team')})), hard:sv.filter(s=>s.hard).map(s=>({t:s.hard,org:orgLabel(s,'team')}))};
+}
+const q2cell = x => x.q2.length>=MIN_N ? f1(avg(x.q2)) : '<span class="cap">비공개</span>';
 function kpi(l,v,unit,sub){ return `<div class="kpi"><span class="kpi-l">${esc(l)}</span><span class="kpi-v">${v}${unit?`<small>${esc(unit)}</small>`:''}</span>${sub?`<span class="kpi-s">${sub}</span>`:''}</div>`; }
 function barCell(p){ return `<div class="barcell"><span class="num" style="width:40px;text-align:right">${p}%</span><div class="bar" role="img" aria-label="${p}%"><i style="width:${Math.min(100,p)}%"></i></div></div>`; }
 function stageState(no,k){
@@ -1080,22 +1210,23 @@ function adminRun(d,no,n){
   const c=CAMPAIGNS[no-1], s=state.schedule[no-1];
   const t=today(); let stage=state.adminStage;
   if(!stage){ stage = (n.phase==='run'&&n.cur.no===no)? n.stage : (t>s.end?4:1); }
-  const A=aggregate(d);
+  const f=curFilter(), fd=filterData(d,f), A=aggregate(fd, subLevel(f));
   const head=`<div class="row between" style="align-items:flex-end">
       <div class="stack" style="gap:8px">${campHead(c)}<h2 class="h2" style="font-size:26px"><span class="num" style="color:var(--accent-strong)">${two(no)}</span> 「${esc(c.slogan)}」</h2></div>
       <div class="field" style="min-width:240px"><label for="adNo">캠페인 선택</label><select id="adNo" data-change="adminNo">${CAMPAIGNS.map(x=>`<option value="${x.no}"${x.no===no?' selected':''}>${two(x.no)} ${esc(x.name)}${statusOf(x.no)==='run'?' (진행 중)':''}</option>`).join('')}</select></div>
     </div>`;
   const stages=`<div class="stages" role="group" aria-label="4주 운영 단계">${STAGES.map((g,i)=>{ const [lb,cl]=stageState(no,g.k); const x=s.stages[i]; return `<button class="stage" aria-pressed="${stage===g.k}" data-act="adminStage" data-k="${g.k}"><span class="s-top"><b>${g.k}. ${esc(g.title)}</b></span><span class="d num">${+x.from===+x.to?md(x.from):md(x.from)+' ~ '+md(x.to)}</span><span class="chip ${cl}" style="align-self:flex-start">${lb}</span></button>`; }).join('')}</div>`;
-  const kpis=`<div class="kpis">${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.teamCount),'%',`<span class="num">${A.opened} / ${A.teamCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 5')}</div>`;
+  const scopeLine=`<p class="cap">아래 수치 범위 · <b style="color:var(--ink)">${esc(scopeText(f))}</b> · 대상 ${A.target}명 · ${A.teamCount}팀</p>`;
+  const kpis=`<div class="kpis">${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.ledCount),'%',`<span class="num">${A.opened} / ${A.ledCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 5')}</div>`;
   let panel='';
   if(stage===1) panel=panelStory(c,s);
-  else if(stage===2) panel=panelOpening(c,s,d,A);
-  else if(stage===3) panel=panelRun(c,s,d,A,n);
-  else panel=panelSurvey(c,s,d,A);
+  else if(stage===2) panel=panelOpening(c,s,fd,A);
+  else if(stage===3) panel=panelRun(c,s,fd,A,n,f);
+  else panel=panelSurvey(c,s,d,A,f);
   const op=(d.ops||[]).find(o=>Number(o.campaign)===no&&Number(o.stage)===stage);
   const opDone = op && (op.done===true||op.done==='TRUE'||op.done==='true');
   const hqBar = state.auth.role==='HQ' ? `<div class="row between well"><span class="muted">${stage}단계 「${esc(STAGES[stage-1].title)}」 진행을 마쳤으면 완료로 표시하세요.</span><button class="btn sm ${opDone?'line':''}" data-act="opsDone" data-k="${stage}" data-done="${opDone?'0':'1'}">${opDone?'완료 취소':'완료로 표시'}</button></div>`:'';
-  return head+stages+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
+  return head+filterBar(d)+stages+scopeLine+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
 }
 function appUrl(){ return CONFIG.APP_URL || location.href.split('#')[0]; }
 function copyBlock(id,label,text,rows){ return `<div class="copybox"><label for="${id}" class="flabel">${esc(label)}</label><textarea id="${id}" readonly ${rows?`style="min-height:${rows}px"`:''}>${esc(text)}</textarea><div class="btns"><button class="btn sm" data-act="copy" data-target="${id}">문구 복사</button></div></div>`; }
@@ -1115,15 +1246,10 @@ ${c.actions.map(a=>'· '+a).join('\n')}
   return `<div class="sec-h"><h3 class="h2" style="font-size:22px">1. 스토리 카드 발송</h3><p class="h3t">${md(s.start)} · 사내 메신저와 포스터로 슬로건 · Rule · 스토리 공개</p></div>
   <div class="grid g2" style="align-items:start">
     <div class="stack" style="gap:12px">
-      <div class="storycard" id="storycard">
-        <div class="sc-top"><span>Winning Basic! · ${c.q}분기 「${esc(QUARTERS[c.q-1].title)}」</span><span>${esc(c.tag)}</span></div>
-        <div class="sc-no">${two(c.no)}</div>
-        <div class="sc-slogan">「${esc(c.slogan)}」</div>
-        ${c.rule?`<div class="sc-rule">Rule ${c.rule}. ${esc(RULES[c.rule])}</div>`:''}
-        <ul class="sc-acts">${c.actions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
-        <div class="sc-foot"><div>${ymd(s.start)} ~ ${ymd(s.fri4)}<br><span class="sc-org">인재경영실</span></div><span class="sc-brand">Winning Basic!</span></div>
-      </div>
-      <div class="btns"><button class="btn sm" data-act="saveCard" data-no="${c.no}">카드 이미지 저장 (PNG)</button></div>
+      <h4 style="font-size:17px">배포할 카드 7장 <span class="cap">메인 포스터 + 스토리 카드 6장</span></h4>
+      <div class="card-grid">${[0,1,2,3,4,5,6].map(i=>`<figure><img src="${cardSrc(c.no,i)}" alt="${i?`스토리 카드 ${i} / 6`:'메인 포스터'}" width="1080" height="1080" loading="lazy"><figcaption><span>${i?`카드 ${i}`:'포스터'}</span><a class="lnk" href="${cardSrc(c.no,i,'png')}" download="${cardName(c.no,i)}">저장</a></figcaption></figure>`).join('')}</div>
+      <div class="btns"><a class="btn sm" href="${CARD_BASE}${two(c.no)}/WinningBasic_${two(c.no)}_cards.zip" download="WinningBasic_${two(c.no)}_스토리카드_7장.zip">7장 한 번에 받기 (ZIP)</a><button type="button" class="btn sec2 sm" data-act="openStory" data-no="${c.no}">구성원 화면으로 미리 보기</button></div>
+      <p class="cap">카드는 1080×1080 PNG입니다. 사내 메신저에는 포스터 → 카드 1~6 순서로 올리면 됩니다.</p>
     </div>
     <div class="stack" style="gap:16px">
       ${copyBlock('cpStory','사내 메신저 공지 문구',msg,320)}
@@ -1150,7 +1276,7 @@ ${c.actions.map((a,i)=>`  ${i+1}. ${a}`).join('\n')}
 ※ 참여: ${appUrl()}#join · Survey: ${md(s.fri4)}부터`;
   const leader = state.auth.role==='LEADER';
   const mine = leader ? d.openings.find(o=>o.team===state.auth.team) : null;
-  const notOpened = A.teams.filter(t=>!t.opened);
+  const notOpened = A.teams.filter(t=>t.leader&&!t.opened);
   return `<div class="sec-h"><h3 class="h2" style="font-size:22px">2. 리더 오프닝</h3><p class="h3t">${md(s.stages[1].from)} · 리더 주관 팀 회의에서 안내하고 팀별 운영 방향을 정합니다</p></div>
   <div class="grid g2" style="align-items:start">
     ${copyBlock('cpOpen','리더 오프닝 스크립트 (3분)',script,380)}
@@ -1163,13 +1289,12 @@ ${c.actions.map((a,i)=>`  ${i+1}. ${a}`).join('\n')}
       <div class="field"><label for="opDue">기한<span class="req" aria-hidden="true">*</span></label><input type="date" id="opDue" name="due" required value="${esc(mine?.due||fmt(s.fri4))}" aria-describedby="eOpDue"><span class="err" id="eOpDue" data-err="due"></span></div></div>
       <p class="cap">주기와 기한은 필수입니다. 지난 워크숍에서 주기 · 기한이 정해진 팀 약속은 약 9%(237건 중 22건)에 그쳤습니다.</p>
       <div class="row between"><span class="status" id="opStatus" role="status"></span><button class="btn" type="submit">${mine?'수정 저장':'등록'}</button></div>
-    </form>`:`<div class="kpis">${kpi('오프닝 등록 팀',A.opened,'팀',`전체 ${A.teamCount}팀`)}${kpi('미등록 팀',notOpened.length,'팀')}</div>`}
-    ${!leader?`<div class="tbl-wrap"><table><caption class="skip">팀별 오프닝 등록 현황</caption><thead><tr><th scope="col">팀</th><th scope="col">리더</th><th scope="col">팀 약속</th><th scope="col">주기 · 기한</th></tr></thead><tbody>${A.teams.map(t=>{const o=d.openings.find(x=>x.company+' · '+x.team===t.label);return `<tr><td>${esc(t.label)}</td><td>${esc(t.leader||'—')}</td><td class="wrap-t">${o?esc(o.promise):'<span class="chip warn">미등록</span>'}</td><td class="num">${o?esc(o.cycle)+' · '+esc(String(o.due).slice(5)):'—'}</td></tr>`;}).join('')}</tbody></table></div>`:''}
+    </form>`:`<div class="kpis">${kpi('오프닝 등록 팀',A.opened,'팀',`팀장이 있는 ${A.ledCount}팀 중`)}${kpi('미등록 팀',notOpened.length,'팀')}</div>`}
+    ${!leader?`<div class="tbl-wrap"><table><caption class="skip">팀별 오프닝 등록 현황</caption><thead><tr><th scope="col">팀</th><th scope="col">리더</th><th scope="col">팀 약속</th><th scope="col">주기 · 기한</th></tr></thead><tbody>${A.teams.map(t=>{const o=d.openings.find(x=>orgKey(x,'team')===t.key);return `<tr><td>${esc(t.label)}</td><td>${esc(t.leader||'—')}</td><td class="wrap-t">${o?esc(o.promise):t.leader?'<span class="chip warn">미등록</span>':'<span class="chip">팀장 없음</span>'}</td><td class="num">${o?esc(o.cycle)+' · '+esc(String(o.due).slice(5)):'—'}</td></tr>`;}).join('')}</tbody></table></div>`:''}
     </div>
   </div>`;
 }
-function panelRun(c,s,d,A,n){
-  const isHR=state.auth.role!=='LEADER';
+function panelRun(c,s,d,A,n,f){
   const low=A.teams.filter(t=>pct(t.part,t.target)<30).sort((a,b)=>pct(a.part,a.target)-pct(b.part,b.target));
   const wk = (n.phase==='run'&&n.cur.no===c.no&&n.week)? n.week : null;
   const nudge=`[Winning Basic! ${two(c.no)}] ${wk?wk+'주차':'캠페인'} 중간 안내
@@ -1183,8 +1308,8 @@ function panelRun(c,s,d,A,n){
 실천 체크는 10초면 끝납니다: ${appUrl()}#join
 잘한 동료가 있다면 추천도 남겨 주세요.`;
   return `<div class="sec-h"><h3 class="h2" style="font-size:22px">3. 캠페인 집중 실행</h3><p class="h3t">${md(s.stages[2].from)} ~ ${md(s.fri4)} · 진척도와 결과물을 확인하고 독려합니다</p></div>
-  ${state.auth.role==='HQ'&&A.cos.length>1?`<div class="tbl-wrap"><table><caption class="skip">계열사별 참여 현황</caption><thead><tr><th scope="col">계열사</th><th scope="col" class="r">대상</th><th scope="col">참여율</th><th scope="col" class="r">결과물</th><th scope="col" class="r">추천</th><th scope="col" class="r">오프닝</th></tr></thead><tbody>${A.cos.map(x=>`<tr><td><b>${esc(x.label)}</b></td><td class="r num">${x.target}</td><td>${barCell(pct(x.part,x.target))}</td><td class="r num">${x.subs}</td><td class="r num">${x.recs}</td><td class="r num">${x.opened}/${x.teams}팀</td></tr>`).join('')}</tbody></table></div>`:''}
-  <div class="tbl-wrap"><table><caption class="skip">팀별 참여 현황</caption><thead><tr><th scope="col">팀</th><th scope="col" class="r">대상</th><th scope="col">참여율</th><th scope="col" class="r">결과물</th><th scope="col" class="r">추천</th><th scope="col">오프닝</th></tr></thead><tbody>${A.teams.map(t=>`<tr><td>${esc(t.label)}</td><td class="r num">${t.target}</td><td>${barCell(pct(t.part,t.target))}</td><td class="r num">${t.subs}</td><td class="r num">${t.recs}</td><td>${t.opened?'<span class="chip ok">등록</span>':'<span class="chip warn">미등록</span>'}</td></tr>`).join('')}</tbody></table></div>
+  ${A.level!=='team'?`<h4 style="font-size:17px">${LEVEL_NAME[A.level]}별 현황 <span class="cap">${esc(scopeText(f))}</span></h4><div class="tbl-wrap"><table><caption class="skip">${LEVEL_NAME[A.level]}별 참여 현황</caption><thead><tr><th scope="col">${LEVEL_NAME[A.level]}</th><th scope="col" class="r">대상</th><th scope="col">참여율</th><th scope="col" class="r">결과물</th><th scope="col" class="r">추천</th><th scope="col" class="r">오프닝</th></tr></thead><tbody>${A.groups.map(x=>`<tr><td><b>${esc(x.label)}</b></td><td class="r num">${x.target}</td><td>${barCell(pct(x.part,x.target))}</td><td class="r num">${x.subs}</td><td class="r num">${x.recs}</td><td class="r num">${x.opened}/${x.teams}팀</td></tr>`).join('')}</tbody></table></div>`:''}
+  <h4 style="font-size:17px">팀별 현황</h4><div class="tbl-wrap"><table><caption class="skip">팀별 참여 현황</caption><thead><tr><th scope="col">팀</th><th scope="col" class="r">대상</th><th scope="col">참여율</th><th scope="col" class="r">결과물</th><th scope="col" class="r">추천</th><th scope="col">오프닝</th></tr></thead><tbody>${A.teams.map(t=>`<tr><td>${esc(t.label)}</td><td class="r num">${t.target}</td><td>${barCell(pct(t.part,t.target))}</td><td class="r num">${t.subs}</td><td class="r num">${t.recs}</td><td>${t.opened?'<span class="chip ok">등록</span>':t.leader?'<span class="chip warn">미등록</span>':'<span class="cap">—</span>'}</td></tr>`).join('')}</tbody></table></div>
   <div class="grid g2" style="align-items:start">
     <div class="stack" style="gap:10px"><h4 style="font-size:17px">독려가 필요한 팀 <span class="cap">(참여율 30% 미만)</span></h4>
       ${low.length?`<ul class="acts">${low.map(t=>`<li><span class="i" aria-hidden="true">!</span><span>${esc(t.label)} <span class="cap num">· ${pct(t.part,t.target)}% (${t.part}/${t.target})</span></span></li>`).join('')}</ul>`:'<p class="muted">모든 팀이 30% 이상 참여 중입니다.</p>'}
@@ -1192,25 +1317,26 @@ function panelRun(c,s,d,A,n){
     ${copyBlock('cpNudge','독려 메시지',nudge,260)}
   </div>`;
 }
-function panelSurvey(c,s,d,A){
+function panelSurvey(c,s,d,A,f){
   const isLeader=state.auth.role==='LEADER';
-  const q2txt = isLeader && A.q2n<MIN_N ? `비공개 (응답 ${MIN_N}명 미만)` : f1(A.q2);
-  const share=`[Winning Basic! ${two(c.no)} 결과 공유]
+  const q2hide = A.q2n<MIN_N;
+  const q2txt = q2hide ? `비공개 (응답 ${MIN_N}명 미만)` : f1(A.q2);
+  const share=`[Winning Basic! ${two(c.no)} 결과 공유 · ${scopeText(f)}]
 「${c.slogan}」
 
 · 참여 ${A.part}명 (참여율 ${pct(A.part,A.target)}%)
 · 결과물 ${A.subs}건 · 동료 추천 ${A.recs}건
-· Survey 응답 ${A.svN}명 — 실천지수 ${f1(A.q1)} / 리더 솔선지수 ${isLeader&&A.q2n<MIN_N?'비공개':f1(A.q2)} / 캠페인 효과 ${f1(A.q3)} (5점 만점)
+· Survey 응답 ${A.svN}명 — 실천지수 ${f1(A.q1)} / 리더 솔선지수 ${q2hide?'비공개':f1(A.q2)} / 캠페인 효과 ${f1(A.q3)} (5점 만점)
 
 함께 실천해 주셔서 감사합니다.
 ${c.no<13?`다음 캠페인 「${CAMPAIGNS[c.no].slogan}」은 ${md(state.schedule[c.no].start)}에 시작합니다.`:'올해 마지막 캠페인이었습니다.'}`;
   const memoOp=(d.ops||[]).find(o=>Number(o.campaign)===c.no&&Number(o.stage)===4);
   return `<div class="sec-h"><h3 class="h2" style="font-size:22px">4. 캠페인 Survey · 결과 공유</h3><p class="h3t">${md(s.surveyFrom)} ~ ${md(s.surveyTo)} 응답 · 결과를 공유하고 다음 캠페인에 반영합니다</p></div>
-  <div class="kpis">${kpi('응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN} / ${A.target}명</span>`)}${kpi('① 실천지수',f1(A.q1),'/ 5')}${kpi('② 리더 솔선지수',q2txt,isLeader&&A.q2n<MIN_N?'':'/ 5')}${kpi('③ 캠페인 효과',f1(A.q3),'/ 5')}</div>
-  ${!isLeader?`<div class="tbl-wrap"><table><caption class="skip">${state.auth.role==='HQ'?'계열사':'팀'}별 Survey 결과</caption><thead><tr><th scope="col">${state.auth.role==='HQ'?'계열사':'팀'}</th><th scope="col" class="r">응답</th><th scope="col" class="r">① 실천</th><th scope="col" class="r">② 리더</th><th scope="col" class="r">③ 효과</th></tr></thead><tbody>${(state.auth.role==='HQ'?A.cos:A.teams).map(x=>`<tr><td>${esc(x.label)}</td><td class="r num">${x.svN}</td><td class="r num">${f1(avg(x.q1))}</td><td class="r num">${x.q2.length>=MIN_N?f1(avg(x.q2)):'<span class="cap">비공개</span>'}</td><td class="r num">${f1(avg(x.q3))}</td></tr>`).join('')}</tbody></table></div><p class="cap">응답 ${MIN_N}명 미만인 단위는 ② 리더 솔선지수를 표시하지 않습니다.</p>`:''}
+  <div class="kpis">${kpi('응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN} / ${A.target}명</span>`)}${kpi('① 실천지수',f1(A.q1),'/ 5')}${kpi('② 리더 솔선지수',q2hide?'비공개':f1(A.q2),q2hide?'':'/ 5',q2hide?`응답 ${MIN_N}명 미만`:'')}${kpi('③ 캠페인 효과',f1(A.q3),'/ 5')}</div>
+  ${!isLeader?`<div class="tbl-wrap"><table><caption class="skip">${LEVEL_NAME[A.level]}별 Survey 결과</caption><thead><tr><th scope="col">${LEVEL_NAME[A.level]}</th><th scope="col" class="r">응답</th><th scope="col" class="r">① 실천</th><th scope="col" class="r">② 리더</th><th scope="col" class="r">③ 효과</th></tr></thead><tbody>${A.groups.map(x=>`<tr><td>${esc(x.label)}</td><td class="r num">${x.svN}</td><td class="r num">${f1(avg(x.q1))}</td><td class="r num">${q2cell(x)}</td><td class="r num">${f1(avg(x.q3))}</td></tr>`).join('')}</tbody></table></div><p class="cap">응답 ${MIN_N}명 미만인 단위는 ② 리더 솔선지수를 표시하지 않습니다.</p>`:''}
   <div class="grid g2" style="align-items:start">
-    <div class="stack" style="gap:10px"><h4 style="font-size:17px">좋았던 경험 <span class="cap num">${A.good.length}건</span></h4>${A.good.length?`<ul class="acts">${A.good.slice(0,8).map(g=>`<li><span class="i" aria-hidden="true">+</span><span>${esc(g.t)}${state.auth.role==='HQ'?` <span class="cap">· ${esc(g.co)}</span>`:''}</span></li>`).join('')}</ul>`:'<p class="muted">아직 응답이 없습니다.</p>'}</div>
-    <div class="stack" style="gap:10px"><h4 style="font-size:17px">실천하기 어려웠던 점 <span class="cap num">${A.hard.length}건</span></h4>${A.hard.length?`<ul class="acts">${A.hard.slice(0,8).map(g=>`<li><span class="i" aria-hidden="true">−</span><span>${esc(g.t)}${state.auth.role==='HQ'?` <span class="cap">· ${esc(g.co)}</span>`:''}</span></li>`).join('')}</ul>`:'<p class="muted">아직 응답이 없습니다.</p>'}</div>
+    <div class="stack" style="gap:10px"><h4 style="font-size:17px">좋았던 경험 <span class="cap num">${A.good.length}건</span></h4>${A.good.length?`<ul class="acts">${A.good.slice(0,8).map(g=>`<li><span class="i" aria-hidden="true">+</span><span>${esc(g.t)}${!isLeader?` <span class="cap">· ${esc(g.org)}</span>`:''}</span></li>`).join('')}</ul>`:'<p class="muted">아직 응답이 없습니다.</p>'}</div>
+    <div class="stack" style="gap:10px"><h4 style="font-size:17px">실천하기 어려웠던 점 <span class="cap num">${A.hard.length}건</span></h4>${A.hard.length?`<ul class="acts">${A.hard.slice(0,8).map(g=>`<li><span class="i" aria-hidden="true">−</span><span>${esc(g.t)}${!isLeader?` <span class="cap">· ${esc(g.org)}</span>`:''}</span></li>`).join('')}</ul>`:'<p class="muted">아직 응답이 없습니다.</p>'}</div>
   </div>
   <div class="grid g2" style="align-items:start">
     ${copyBlock('cpShare','결과 공유 문구',share,260)}
@@ -1218,11 +1344,15 @@ ${c.no<13?`다음 캠페인 「${CAMPAIGNS[c.no].slogan}」은 ${md(state.schedu
   </div>`;
 }
 function adminYear(d){
-  const rows=d.annual||[]; const w=760,h=240,pl=36,pr=12,pt=16,pb=30; const bw=(w-pl-pr)/13;
+  const f=curFilter(), fd=filterData(d,f), target=fd.roster.length;
+  const rows=CAMPAIGNS.map(c=>{ const x=fd.annualDetail.filter(r=>Number(r.campaign)===c.no); const n=x.reduce((a,r)=>a+r.n,0);
+    const hasQ2=x.every(r=>r.s2!=null);
+    return {campaign:c.no,target,participants:x.reduce((a,r)=>a+r.participants,0),surveyN:n,
+      q1:n?x.reduce((a,r)=>a+r.s1,0)/n:null, q2:n&&hasQ2&&n>=MIN_N?x.reduce((a,r)=>a+r.s2,0)/n:null, q3:n?x.reduce((a,r)=>a+r.s3,0)/n:null}; }); const w=760,h=240,pl=36,pr=12,pt=16,pb=30; const bw=(w-pl-pr)/13;
   const y=v=>pt+(h-pt-pb)*(1-v/100);
   const bars=rows.map((r,i)=>{ const p=pct(r.participants,r.target); const x=pl+i*bw+bw*.2; return `<rect x="${x.toFixed(1)}" y="${y(p).toFixed(1)}" width="${(bw*.6).toFixed(1)}" height="${(h-pb-y(p)).toFixed(1)}" rx="3" fill="var(--accent)"><title>${two(r.campaign)} 참여율 ${p}%</title></rect>${r.participants?`<text x="${(x+bw*.3).toFixed(1)}" y="${(y(p)-5).toFixed(1)}" text-anchor="middle" font-size="11" fill="var(--text-2)">${p}%</text>`:''}<text x="${(x+bw*.3).toFixed(1)}" y="${h-10}" text-anchor="middle" font-size="11" fill="var(--text-3)">${two(r.campaign)}</text>`; }).join('');
   const grid=[0,25,50,75,100].map(v=>`<line x1="${pl}" x2="${w-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--subtle)"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--text-3)">${v}</text>`).join('');
-  return `<section class="card pad-lg stack" aria-labelledby="yrT"><div class="sec-h"><h2 class="h2" id="yrT" style="font-size:22px">캠페인별 참여율</h2><p class="h3t">실천 체크 또는 결과물을 남긴 인원 ÷ 명단 인원</p></div>
+  return filterBar(d)+`<section class="card pad-lg stack" aria-labelledby="yrT"><div class="sec-h"><h2 class="h2" id="yrT" style="font-size:22px">캠페인별 참여율 <span class="cap">${esc(scopeText(f))} · 대상 ${target}명</span></h2><p class="h3t">실천 체크 또는 결과물을 남긴 인원 ÷ 명단 인원</p></div>
     <div style="overflow-x:auto"><svg viewBox="0 0 ${w} ${h}" width="100%" style="min-width:560px;max-width:100%" role="img" aria-label="13개 캠페인 참여율 막대그래프">${grid}${bars}</svg></div></section>
   <div class="tbl-wrap"><table><caption class="skip">캠페인별 연간 지표</caption><thead><tr><th scope="col">No</th><th scope="col">캠페인</th><th scope="col">참여율</th><th scope="col" class="r">Survey 응답</th><th scope="col" class="r">① 실천</th><th scope="col" class="r">② 리더</th><th scope="col" class="r">③ 효과</th></tr></thead><tbody>
   ${rows.map(r=>{const c=CAMPAIGNS[r.campaign-1];const st=statusOf(r.campaign);return `<tr class="${st==='run'?'cur':''}"><td class="num"><b>${two(r.campaign)}</b></td><td>${esc(c.name)}</td><td>${st==='plan'?'<span class="cap">예정</span>':barCell(pct(r.participants,r.target))}</td><td class="r num">${r.surveyN||'—'}</td><td class="r num">${f1(r.q1)}</td><td class="r num">${r.q2==null&&r.surveyN?'<span class="cap">비공개</span>':f1(r.q2)}</td><td class="r num">${f1(r.q3)}</td></tr>`;}).join('')}
@@ -1261,13 +1391,17 @@ async function render(focus){
     if(e.code==='MUST_CHANGE'&&state.session){ state.session.mustChange=true; main.innerHTML=viewChangePw(); main.setAttribute('aria-busy','false'); return; }
     main.innerHTML = emptyBox('불러오지 못했습니다', e.message||'잠시 후 다시 시도하세요.', '<button class="btn" data-act="reload">다시 시도</button>'); }
   main.setAttribute('aria-busy','false');
+  maybeAutoStory(ROUTES[route]?route:'home');
   if(focus){ window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
 window.addEventListener('hashchange',()=>{ state.adminStage=null; render(true); });
+$('#storyDlgX').addEventListener('click',closeStory);
+$('#storyDlg').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeStory(); });
 
 /* ===================== 이벤트 ===================== */
 const ACTIONS={
   reload(){ render(); },
+  fReset(){ state.fCo=state.fDiv=state.fTeam=''; render(); },
   theme(){ const order=['auto','light','dark']; const cur=store.get('theme')||'auto'; applyTheme(order[(order.indexOf(cur)+1)%3]); },
   copy(b){ const ta=document.getElementById(b.dataset.target); copyText(ta.value, ta); },
   logout(){ clearSession(); state._curPw=null; toast('로그아웃했습니다'); render(true); },
@@ -1280,14 +1414,11 @@ const ACTIONS={
     try{ await api.call('opsUpdate',{campaign:state.adminNo,stage:k,done,memo}); toast(done?'완료로 표시했습니다':'완료 표시를 취소했습니다'); render(); }
     catch(e){ toast(e.message); b.disabled=false; }
   },
-  async saveCard(b){
-    const el=$('#storycard');
-    if(!window.html2canvas){ toast('이미지 저장 기능을 불러오지 못했습니다. 카드를 화면 캡처해 사용하세요'); return; }
-    b.disabled=true;
-    try{ const cv=await html2canvas(el,{scale:2,backgroundColor:'#FAFAF9'}); const a=document.createElement('a'); a.href=cv.toDataURL('image/png'); a.download=`WinningBasic_${two(b.dataset.no)}_스토리카드.png`; document.body.appendChild(a); a.click(); a.remove(); toast('카드 이미지를 저장했습니다'); }
-    catch(e){ toast('이미지를 만들지 못했습니다. 카드를 화면 캡처해 사용하세요'); }
-    b.disabled=false;
-  },
+  stripMove(b){ const el=document.getElementById('strip-'+b.dataset.id); if(!el) return;
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollBy({left:Number(b.dataset.dir)*el.clientWidth, behavior:reduce?'auto':'smooth'}); },
+  openStory(b){ openStory(Number(b.dataset.no)); },
+  closeStory(b,e){ closeStory(); location.hash=b.getAttribute('href').slice(1); },
   addSkip(){ const v=$('#stSkip').value; if(!v){ toast('건너뛸 주의 날짜를 먼저 고르세요'); $('#stSkip').focus(); return; } let x=D(v); while(x.getDay()!==1) x=addD(x,-1); const k=fmt(x); if(!state._skips.includes(k)) state._skips.push(k); state._skips.sort(); render(); },
   delSkip(b){ state._skips.splice(Number(b.dataset.i),1); render(); }
 };
@@ -1295,6 +1426,9 @@ const CHANGES={
   recCo(e){ state._recCo=e.target.value; state._recTm=''; rerenderKeep(); },
   recTm(e){ state._recTm=e.target.value; rerenderKeep(); },
   galleryNo(e){ state.galleryNo=Number(e.target.value); render(); },
+  fCo(e){ state.fCo=e.target.value; state.fDiv=''; state.fTeam=''; render(); },
+  fDiv(e){ state.fDiv=e.target.value; state.fTeam=''; render(); },
+  fTeam(e){ state.fTeam=e.target.value; render(); },
   galleryCo(e){ state.galleryCo=e.target.value; render(); },
   adminNo(e){ state.adminNo=Number(e.target.value); state.adminStage=null; render(); },
   stStart(e){ state._start=e.target.value; render(); }
