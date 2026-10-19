@@ -1,4 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>Winning Basic!</title>
+<meta name="theme-color" content="#FAFAF9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141211" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Winning Basic!">
+<meta property="og:title" content="Winning Basic! · '27 MVC 가치체계 내재화 캠페인">
+<meta property="og:description" content="규칙을 외우는 조직이 아니라, 규칙대로 일하는 조직이 이깁니다. 이번 캠페인 확인하고 실천 체크하기">
+<meta property="og:image" content="https://goodwon89.github.io/winning-basic/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://goodwon89.github.io/winning-basic/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="description" content="'27년 MVC 가치체계 내재화 캠페인 Winning Basic! — 캠페인 안내, 실천·결과물 제출, Survey, 4주 운영 대시보드">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -222,7 +242,7 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .status.ok{color:var(--ok)}.status.bad{color:var(--bad)}
 
 /* kpi & bars */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-card);padding:18px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .kpi-l{font-size:13px;color:var(--text-3);font-weight:600}
 .kpi-v{font-size:30px;font-weight:600;letter-spacing:-0.04em;color:var(--accent-strong);line-height:1.1}
@@ -275,6 +295,17 @@ dialog .btns{margin-top:20px;justify-content:flex-end}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:var(--z-toast);background:var(--btn-bg);color:var(--btn-fg);padding:12px 20px;border-radius:var(--r-pill);font-weight:700;font-size:14px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 footer{border-top:1px solid var(--subtle);padding-block:28px;color:var(--text-3);font-size:13px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+.ft-r{text-align:right;align-items:flex-end}
+@media (max-width:640px){.ft-r{text-align:left;align-items:flex-start}}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:24px}
+.linkbtn:hover{color:var(--ink)}
+#privDlg{max-width:560px}
+.priv{font-size:14px;color:var(--text-2);max-height:65vh;overflow:auto}
+.priv dl{display:grid;grid-template-columns:96px 1fr;gap:10px 14px;margin:0}
+.priv dt{font-weight:600;color:var(--ink)}
+.priv dd{margin:0}
+@media (max-width:480px){.priv dl{grid-template-columns:1fr;gap:2px}.priv dd{margin-bottom:10px}}
+button[aria-busy="true"]{cursor:progress}
 
 @media (max-width:1199px){.hero .display{font-size:52px}.h1{font-size:36px}.c-head .slogan{font-size:32px}}
 @media (max-width:900px){
@@ -299,6 +330,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
 </style>
 <script>(function(){try{var t=JSON.parse(localStorage.getItem('wb_theme'));if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 
+</head>
+<body>
 <a class="skip" href="#main">본문 바로가기</a>
 <div id="demoBar" class="demo-bar" hidden></div>
 <header class="hdr">
@@ -318,11 +351,15 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
   </div>
 </header>
 <main id="main" class="wrap" tabindex="-1" aria-live="polite" aria-busy="true"></main>
-<footer><div class="wrap"><span>인재경영실 · '27 MVC 가치체계 내재화 캠페인 「Winning Basic!」</span><span>규칙을 외우는 조직이 아니라, 규칙대로 일하는 조직이 이깁니다.</span></div></footer>
+<footer><div class="wrap"><div class="stack" style="gap:6px"><span>인재경영실 · '27 MVC 가치체계 내재화 캠페인 「Winning Basic!」</span><span id="contactLine"></span></div><div class="stack ft-r" style="gap:6px"><span>규칙을 외우는 조직이 아니라, 규칙대로 일하는 조직이 이깁니다.</span><span><button type="button" class="linkbtn" data-act="privacy">개인정보 수집 · 이용 안내</button></span></div></div></footer>
 <div id="toast" class="toast" role="status" hidden></div>
 <dialog id="storyDlg" aria-labelledby="storyDlgT">
   <div class="dlg-head"><h2 id="storyDlgT"></h2><button type="button" class="icon-btn" id="storyDlgX" aria-label="스토리 카드 닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
   <div id="storyDlgBody"></div>
+</dialog>
+<dialog id="privDlg" aria-labelledby="privT">
+  <div class="dlg-head"><h2 id="privT">개인정보 수집 · 이용 안내</h2><button type="button" class="icon-btn" data-act="privClose" aria-label="안내 닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+  <div id="privBody" class="priv"></div>
 </dialog>
 <dialog id="confirmDlg" aria-labelledby="dlgTitle" aria-describedby="dlgBody">
   <h2 id="dlgTitle"></h2>
@@ -337,7 +374,9 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-betw
    ========================================================= */
 const CONFIG = {
   API_URL: 'https://script.google.com/macros/s/AKfycbwX5As366w2YDXH3AJXM6uAnH_npU9hhPMARzMB1zcUBMcJBE3Lr6tBsqt4e8I9fs1L/exec',
-  APP_URL: ''   // 공지 문구에 넣을 앱 주소(비우면 현재 주소)
+  APP_URL: '',  // 공지 문구에 넣을 앱 주소(비우면 현재 주소)
+  CONTACT: '',  // 앱 오류 문의처 (예: '인재경영실 장근원 과장 · 내선 0000'). 비우면 '인재경영실'로 표시
+  KEEP: ''      // 개인정보 보관 기간 (예: '캠페인 종료(2027년 12월) 후 1년'). 개인정보 담당 확인 후 기입
 };
 
 /* ===================== 캠페인 콘텐츠 ===================== */
@@ -693,12 +732,17 @@ const mock = (()=>{
       db.surveyResp.filter(f).forEach(r=>{ const g=get(r.campaign,r); g.n++; g.s1+=r.q1; g.s2+=r.q2; g.s3+=r.q3; });
       const annualDetail=Object.values(cell).map(({ppl,...g})=>guard(g)&&g.n<MIN_N?{...g,s2:null}:g);
       const myOpening=a.leader.includes('Y')?db.openings.find(o=>o.campaign===no&&o.company===a.company&&o.division===a.division&&o.team===a.team)||null:null;
-      return {role:a.role,company:a.scopeCompany,team:a.scopeTeam,settings:db.settings,roster:rost.map(({initPw,...r})=>r),
+      const hsh=x=>[...String(x)].reduce((h,ch)=>(h*31+ch.charCodeAt(0))>>>0,7), td=today();
+      const did=new Set([...db.practice,...db.submissions].filter(x=>x.campaign===no).map(x=>x.company+'|'+x.empno));
+      const visits=rost.filter(r=>hsh(r.empno)%10<8||did.has(r.company+'|'+r.empno)).map(r=>({company:r.company,division:r.division,team:r.team,last:fmt(addD(td,-(hsh(r.empno+'d')%10))),inNo:did.has(r.company+'|'+r.empno)||hsh(r.empno+'|'+no)%10<6}));
+      return {role:a.role,company:a.scopeCompany,team:a.scopeTeam,settings:db.settings,roster:rost.map(({initPw,...r})=>r),visits,today:fmt(td),
         practice:db.practice.filter(byNo),submissions:db.submissions.filter(byNo),recommends:db.recommends.filter(byNo),
         surveyPart:db.surveyPart.filter(byNo),surveyResp:sr,openings:db.openings.filter(byNo),ops:db.ops,annualDetail,myOpening};
     },
     saveSettings(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); db.settings={startDate:b.startDate,skipWeeks:b.skipWeeks}; return {saved:true}; },
     opsUpdate(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); upsert(db.ops,{campaign:b.campaign,stage:b.stage,done:!!b.done,memo:b.memo||''},['campaign','stage']); return {saved:true}; },
+    visit(b){ session(b.token); return {saved:true}; },
+    logError(b){ session(b.token); return {saved:true}; },
     resetPassword(b){ const a=session(b.token); const t=person(b.company||a.scopeCompany,b.empno);
       if(!t) throw apiError('해당 계열사 명단에 없는 사번입니다');
       if(!(a.role==='HQ'||(a.role==='HR'&&t.company===a.scopeCompany))) throw apiError('이 직원의 비밀번호를 초기화할 권한이 없습니다');
@@ -759,7 +803,7 @@ const prof = () => state.session && state.session.profile;
 const peopleCos = () => [...new Set(state.people.map(r=>r.company))];
 const peopleTeams = co => [...new Set(state.people.filter(r=>r.company===co).map(r=>r.team))];
 const peopleIn = (co,tm) => state.people.filter(r=>r.company===co&&r.team===tm);
-async function loadMe(){ const m=await api.call('me'); state.people=m.people; if(state.session){ state.session.profile=m.profile; setSession(state.session); } return m; }
+async function loadMe(){ const m=await api.call('me'); state.people=m.people; if(state.session){ state.session.profile=m.profile; setSession(state.session); logVisit(); } return m; }
 function renderAcct(){
   const el=$('#acct'); if(!el) return; const p=prof();
   $('#navAdmin').hidden = !(p && p.role && !state.session.mustChange);
@@ -1163,7 +1207,7 @@ function orgLabel(r,level){
 function orgKey(r,level){ return level==='company'? r.company : level==='division'? r.company+'|'+(r.division||DIV_NONE) : r.company+'|'+(r.division||DIV_NONE)+'|'+r.team; }
 function normOrg(d){
   const fix=a=>(a||[]).forEach(r=>{ r.division=r.division||DIV_NONE; r.team=r.team||'팀 미지정'; });
-  ['roster','practice','submissions','recommends','surveyPart','surveyResp','openings','annualDetail'].forEach(k=>fix(d[k]));
+  ['roster','practice','submissions','recommends','surveyPart','surveyResp','openings','annualDetail','visits'].forEach(k=>fix(d[k]));
   return d;
 }
 function curFilter(){
@@ -1179,7 +1223,7 @@ function scopeText(f){ return !f.co ? '그룹 전체' : !f.div ? f.co : !f.team 
 function filterData(d,f){
   const m=matchF(f), pick=a=>(a||[]).filter(m);
   return {...d, roster:pick(d.roster), practice:pick(d.practice), submissions:pick(d.submissions), recommends:pick(d.recommends),
-    surveyPart:pick(d.surveyPart), surveyResp:pick(d.surveyResp), openings:pick(d.openings), annualDetail:pick(d.annualDetail)};
+    surveyPart:pick(d.surveyPart), surveyResp:pick(d.surveyResp), openings:pick(d.openings), annualDetail:pick(d.annualDetail), visits:pick(d.visits)};
 }
 function filterBar(d){
   const a=state.auth, f=curFilter();
@@ -1241,7 +1285,9 @@ function adminRun(d,no,n){
     </div>`;
   const stages=`<div class="stages" role="group" aria-label="4주 운영 단계">${STAGES.map((g,i)=>{ const [lb,cl]=stageState(no,g.k); const x=s.stages[i]; return `<button class="stage" aria-pressed="${stage===g.k}" data-act="adminStage" data-k="${g.k}"><span class="s-top"><b>${g.k}. ${esc(g.title)}</b></span><span class="d num">${+x.from===+x.to?md(x.from):md(x.from)+' ~ '+md(x.to)}</span><span class="chip ${cl}" style="align-self:flex-start">${lb}</span></button>`; }).join('')}</div>`;
   const scopeLine=`<p class="cap">아래 수치 범위 · <b style="color:var(--ink)">${esc(scopeText(f))}</b> · 대상 ${A.target}명 · ${A.teamCount}팀</p>`;
-  const kpis=`<div class="kpis">${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.ledCount),'%',`<span class="num">${A.opened} / ${A.ledCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 5')}</div>`;
+  const vs=fd.visits||[], vIn=vs.filter(v=>v.inNo).length, d7=fmt(addD(D(d.today||fmt(t)),-6)), v7=vs.filter(v=>String(v.last)>=d7).length;
+  const visitKpi = d.visits ? kpi('접속률',pct(vIn,A.target),'%',`<span class="num">이번 캠페인 ${vIn}명 · 최근 7일 ${v7}명</span>`) : '';
+  const kpis=`<div class="kpis">${visitKpi}${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.ledCount),'%',`<span class="num">${A.opened} / ${A.ledCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 5')}</div>`;
   let panel='';
   if(stage===1) panel=panelStory(c,s);
   else if(stage===2) panel=panelOpening(c,s,fd,A);
@@ -1435,6 +1481,8 @@ const ACTIONS={
   reload(){ render(); },
   adminRefresh(){ api.clear(); toast('최신 데이터를 불러옵니다'); render(); },
   fReset(){ state.fCo=state.fDiv=state.fTeam=''; render(); },
+  privacy(){ $('#privBody').innerHTML=privacyHtml(); $('#privDlg').showModal(); },
+  privClose(){ $('#privDlg').close(); },
   theme(){ const order=['auto','light','dark']; const cur=store.get('theme')||'auto'; applyTheme(order[(order.indexOf(cur)+1)%3]); },
   copy(b){ const ta=document.getElementById(b.dataset.target); copyText(ta.value, ta); },
   logout(){ clearSession(); state._curPw=null; toast('로그아웃했습니다'); render(true); },
@@ -1570,7 +1618,13 @@ const FORMS={
 };
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-act]'); if(b&&ACTIONS[b.dataset.act]){ e.preventDefault(); ACTIONS[b.dataset.act](b,e); } });
 document.addEventListener('change',e=>{ const k=e.target.dataset&&e.target.dataset.change; if(k&&CHANGES[k]) CHANGES[k](e); });
-document.addEventListener('submit',e=>{ const f=e.target; if(f.dataset.form&&FORMS[f.dataset.form]){ e.preventDefault(); FORMS[f.dataset.form](f); } });
+document.addEventListener('submit',async e=>{ const f=e.target; if(!(f.dataset.form&&FORMS[f.dataset.form])) return; e.preventDefault();
+  if(f.dataset.busy) return;                                  // 저장 중에 다시 누르면 무시(두 번 저장 방지)
+  const btn=e.submitter||f.querySelector('[type=submit]'), label=btn&&btn.textContent;
+  f.dataset.busy='1'; if(btn){ btn.disabled=true; btn.setAttribute('aria-busy','true'); btn.textContent='저장 중…'; }
+  try{ await FORMS[f.dataset.form](f); }
+  finally{ delete f.dataset.busy; if(btn&&btn.isConnected){ btn.disabled=false; btn.removeAttribute('aria-busy'); btn.textContent=label; } }
+});
 
 /* ===================== 시작 ===================== */
 function demoBar(){
@@ -1584,6 +1638,35 @@ const THEME_UI={
   light:{label:'라이트',icon:'<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" fill="currentColor"/><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13M11.82 11.82l1.13 1.13M3.05 12.95l1.13-1.13M11.82 4.18l1.13-1.13"/></g></svg>'},
   dark:{label:'다크',icon:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.75 5.75 0 0 1 6.4 2.5a5.75 5.75 0 1 0 7.1 7.1z" fill="currentColor"/></svg>'}
 };
+/* ===================== 푸터 · 개인정보 안내 ===================== */
+function renderFooter(){ $('#contactLine').textContent = `문의 · 비밀번호는 소속 계열사 HR, 앱 오류는 ${CONFIG.CONTACT||'인재경영실'}`; }
+function privacyHtml(){
+  return `<dl>
+    <dt>수집 항목</dt><dd>인재경영실이 등록한 명단(계열사, 사번, 성명, 본부, 팀, 직위, 직책, 리더 구분)과 앱에서 입력한 내용(실천 체크, 결과물, 동료 추천, 리더 오프닝, Survey 응답, 접속일)</dd>
+    <dt>이용 목적</dt><dd>'27 MVC 가치체계 내재화 캠페인 운영, 참여 현황 집계, 우수 사례 공유</dd>
+    <dt>열람 범위</dt><dd>인재경영실(그룹 전체), 계열사 HR(담당 계열사), 본부장·팀장(자기 본부·팀 집계)</dd>
+    <dt>공개되는 것</dt><dd>결과물은 '공개'를 고른 경우에만 사례 화면에 이름과 함께 보입니다. 동료 추천은 추천받은 사람의 이름과 추천 이유가 사례 화면에 보입니다.</dd>
+    <dt>Survey</dt><dd>응답은 이름 · 사번과 분리해 저장합니다. 응답이 3명 미만인 팀은 리더 관련 점수를 보여주지 않습니다.</dd>
+    <dt>보관 기간</dt><dd>${esc(CONFIG.KEEP||'[보관 기간 확정 후 기입]')}. 기간이 지나면 지체 없이 파기합니다.</dd>
+    <dt>문의</dt><dd>${esc(CONFIG.CONTACT||'인재경영실')}</dd>
+  </dl>`;
+}
+/* ===================== 접속 · 오류 기록 (응답을 기다리지 않음) ===================== */
+function logVisit(){
+  if(!state.session||state.session.mustChange) return;
+  const p=state.session.profile||{}, k=fmt(today())+'|'+p.company+'|'+p.empno;
+  if(store.get('visit')===k) return;
+  store.set('visit',k);
+  Promise.resolve(api.raw('visit',{token:state.session.token})).catch(()=>{});
+}
+let _errSent=0;
+function logClientError(where,msg){
+  if(_errSent>=3||!state.session||state.demo) return; _errSent++;
+  Promise.resolve(api.raw('logError',{token:state.session.token,where,msg:String(msg).slice(0,500)})).catch(()=>{});
+}
+window.addEventListener('error',e=>logClientError('error',(e.message||'')+' @'+(e.lineno||'')));
+window.addEventListener('unhandledrejection',e=>{ const r=e.reason; if(r&&r.code) return; logClientError('promise',r&&r.message||r); });
+
 function applyTheme(t){
   if(!THEME_UI[t]) t='auto';
   const root=document.documentElement;
@@ -1595,6 +1678,7 @@ function applyTheme(t){
   b.title=`화면 모드: ${THEME_UI[t].label} (누르면 ${next})`;
 }
 applyTheme(store.get('theme')||'auto');
+renderFooter();
 (async function init(){
   $('#main').innerHTML='<div class="stack"><div class="skel"></div><div class="grid g2"><div class="skel"></div><div class="skel"></div></div></div>';
   const applyBoot=b=>{ state.settings=b.settings; state.companies=b.companies||[]; state.schedule=buildSchedule(b.settings.startDate, b.settings.skipWeeks); };
@@ -1619,3 +1703,5 @@ applyTheme(store.get('theme')||'auto');
   demoBar(); render();
 })();
 </script>
+</body>
+</html>
