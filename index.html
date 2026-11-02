@@ -602,15 +602,31 @@ const wkLabel = no => { const a=(no-1)*4+1; return `W${a}~${a+3}`; };
 
 /* ===================== 데이터 계층 ===================== */
 function apiError(msg, code){ const e=new Error(msg||'요청을 처리하지 못했습니다'); e.code=code||''; return e; }
-const remoteApi = {
-  async bootstrap(){
-    const r = await fetch(CONFIG.API_URL+'?action=bootstrap'); const j = await r.json();
-    if(!j.ok) throw apiError(j.error, j.code); return j.data;
-  },
-  async call(action, body={}){
-    const r = await fetch(CONFIG.API_URL,{method:'POST',body:JSON.stringify({action, ...body})}); const j = await r.json();
-    if(!j.ok) throw apiError(j.error, j.code); return j.data;
+/* 서버가 붐빌 때(동시 실행 한도·잠금 대기) 잠시 뒤 자동으로 다시 시도합니다.
+   - 다시 시도하는 경우: 서버가 '바쁨(BUSY)'이라고 답함, 구글 오류 화면(JSON 아님)이 옴, 읽기 요청의 네트워크 오류
+   - 저장 요청은 네트워크 오류 때 다시 보내지 않습니다(이미 저장됐을 수 있어 중복 방지). */
+const READ_ACTIONS = new Set(['bootstrap','me','gallery','adminData']);
+const NO_RETRY = new Set(['visit','logError']);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+async function remoteFetch(action, doFetch){
+  const tries = NO_RETRY.has(action) ? 1 : 3;
+  let last;
+  for(let i=0;i<tries;i++){
+    if(i) await sleep((i===1?1200:2500) + Math.random()*(i===1?1800:3000));
+    let r;
+    try{ r = await doFetch(); }
+    catch(e){ last = apiError('네트워크 연결을 확인하세요. 회사 PC에서 열리지 않으면 휴대폰으로 접속해 보세요.', 'NET'); if(READ_ACTIONS.has(action)) continue; throw last; }
+    let j=null; try{ j = JSON.parse(await r.text()); }catch(e){ j=null; }
+    if(!j){ last = apiError('지금 사용하는 사람이 많아 처리하지 못했습니다. 잠시 후 다시 시도하세요.', 'BUSY'); continue; }
+    if(!j.ok && j.code==='BUSY'){ last = apiError(j.error, 'BUSY'); continue; }
+    if(!j.ok) throw apiError(j.error, j.code);
+    return j.data;
   }
+  throw last;
+}
+const remoteApi = {
+  bootstrap(){ return remoteFetch('bootstrap', ()=>fetch(CONFIG.API_URL+'?action=bootstrap')); },
+  call(action, body={}){ return remoteFetch(action, ()=>fetch(CONFIG.API_URL,{method:'POST',body:JSON.stringify({action, ...body})})); }
 };
 
 /* 데모: 브라우저 메모리 안에서 서버(Code.gs)와 같은 규칙으로 동작 */
