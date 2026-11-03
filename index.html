@@ -710,12 +710,12 @@ const mock = (()=>{
   const upsert=(arr,row,keys)=>{ const i=arr.findIndex(x=>keys.every(k=>String(x[k])===String(row[k]))); if(i>=0) arr[i]=row; else arr.push(row); };
   const H={
     login(b){
-      const p=person(b.company,b.empno); if(!p) throw apiError('그룹사와 사번을 확인하세요');
+      const p=person(b.company,b.empno); if(!p) throw apiError('그룹사 · 사번 · 비밀번호를 확인하세요. 5회 틀리면 10분간 잠깁니다');
       let a=acc(p); if(a&&a.lockUntil>Date.now()) throw apiError(`비밀번호를 5회 잘못 입력해 잠겼습니다. ${Math.ceil((a.lockUntil-Date.now())/60000)}분 뒤 다시 시도하세요`);
       const must=!(a&&a.pw); const ok = must ? b.password===(p.initPw||p.empno) : b.password===a.pw;
       if(!ok){ a=db.accounts[p.company+'|'+p.empno]=a||{pw:'',v:0,fails:0,lockUntil:0}; a.fails++;
         if(a.fails>=5){ a.fails=0; a.lockUntil=Date.now()+600000; throw apiError('비밀번호를 5회 잘못 입력해 10분간 잠겼습니다'); }
-        throw apiError(`비밀번호가 맞지 않습니다 (${a.fails}/5회)`); }
+        throw apiError('그룹사 · 사번 · 비밀번호를 확인하세요. 5회 틀리면 10분간 잠깁니다'); }
       if(a){ a.fails=0; a.lockUntil=0; }
       return {token:token(p,must),mustChange:must,profile:profile(p)};
     },
