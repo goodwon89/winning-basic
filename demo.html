@@ -241,6 +241,8 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .status{font-size:14px;font-weight:600;min-height:1.4em}
 .status.ok{color:var(--ok)}.status.bad{color:var(--bad)}
 .status.warn{color:var(--warn)}
+.sv-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 18px;margin-bottom:20px;border:1px solid var(--border);border-radius:var(--r-card);background:var(--surface);color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
+.sv-bar:hover{border-color:var(--accent)}.sv-bar>span:last-child{margin-left:auto;color:var(--accent-strong)}
 .file-in{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
 .file-in:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
 div.status{font-weight:500;padding:12px 14px;border-radius:var(--r-md);background:var(--subtle)}
@@ -403,7 +405,7 @@ const QUARTERS = [
 
 const CAMPAIGNS = [
  {no:1,q:1,rule:null,tag:'기본',name:'인사 먼저 · 밝게 잘하기',slogan:'인사 한마디가 일의 첫 문장입니다',
-  agenda:'팀 · 직급 · 계열사를 넘어, 상상인 구성원들과 먼저 밝게 인사하기',
+  agenda:'팀 · 직급 · 그룹사를 넘어, 상상인 구성원들과 먼저 밝게 인사하기',
   actions:['출근길 · 엘리베이터 · 사무실에서 먼저 밝게 인사하기','얼굴을 모르는 동료라도 같은 사무실에서 마주친다면 먼저 밝게 인사하기','인사할 때는 모니터, 스마트폰에서 눈을 떼고 상대를 보면서 인사하기'],
   situation:'엘리베이터에 다섯 명이 탑니다. 향하는 층은 모두 같은 층. 같은 회사 소속이라는 것을 알고 있습니다. 어색해하는 사람도, 그냥 무심하게 음악을 듣는 사람도 있습니다. 한 사람이 먼저 용기 내어 인사합니다. 모두가 편해집니다. 몇 주 후, 먼저 인사한 그 사람과 협업할 일이 생겼습니다. 엘리베이터에서 그날이 떠오르고 보다 빠르게 연결될 것 같은 느낌이 듭니다.',
   message:'동료를 존중하는 것, 우리 팀을 넘어 회사의 답을 찾는 일은 어찌 보면 모르는 동료에게 먼저 건네는 인사에서 시작합니다. 인사는 상대를 봤다는 신호이고, 연결의 시작입니다. **인사는 예절을 넘어, 업무의 시작으로도 볼 수 있습니다.**',
@@ -504,7 +506,7 @@ const STAGES = [
 ];
 const ROLE_GUIDE = [
   ['인재경영실','캠페인 전체 방향 설정, 연간 일정과 메인 포스터 / 주요 템플릿 작성 및 배포, 연말 시상 주관'],
-  ['각사 HR','계열사 채널 배포, 현장 사례 수집, 계열사 자율 재량적 운영 방향 반영'],
+  ['각사 HR','그룹사 채널 배포, 현장 사례 수집, 그룹사 자율 재량적 운영 방향 반영'],
   ['현업 리더','팀 회의 오프닝 주관, 1on1 관련 주제 숙지, 캠페인 솔선수범 역할 인식'],
   ['구성원','캠페인 주간 해당 Rule 적극 실천, 동료의 좋은 사례 발굴 / 추천, Survey 적극 참여']
 ];
@@ -652,7 +654,7 @@ const mock = (()=>{
     Object.entries(divs).forEach(([dv,teams])=>{ roster.push({company:co,empno:L+(no++),name:pick(SUR)+pick(GIV),division:dv,team:'본부 직속',position:'임원',duty:'본부장',leader:'H',initPw:''}); teams.forEach(tm=>{ const n=5+Math.floor(rnd()*4); for(let i=0;i<n;i++){ roster.push({company:co,empno:L+(no++),name:pick(SUR)+pick(GIV),division:dv,team:tm,position:i===0?'부장':pick(POS),duty:i===0?'팀장':'팀원',leader:i===0?'Y':'',initPw:''}); } }); });
   });
   const hq=roster.find(r=>r.company==='데모 A사'&&r.team==='경영지원팀'&&!r.leader);
-  const hr=roster.find(r=>r.company==='데모 B사'&&r.leader==='Y');   // 계열사 HR 겸 팀장 (겸직 검증용)
+  const hr=roster.find(r=>r.company==='데모 B사'&&r.leader==='Y');   // 그룹사 HR 겸 팀장 (겸직 검증용)
   const lead=roster.find(r=>r.company==='데모 A사'&&r.team==='리테일영업팀'&&r.leader==='Y');
   const fresh=roster.find(r=>r.company==='데모 C사'&&!r.leader);
   const divhead=roster.find(r=>r.company==='데모 A사'&&r.division==='영업본부'&&r.leader==='H');
@@ -678,8 +680,8 @@ const mock = (()=>{
         const sc=()=>Math.max(1,Math.min(5,Math.round(base+(rnd()-.4)*2.2)));
         db.surveyPart.push({ts:ts(s.fri4),campaign:no,...who(r)});
         db.surveyResp.push({ts:fmt(s.fri4),campaign:no,company:r.company,division:r.division,team:r.team,position:r.position,duty:r.duty,q1:sc(),q2:sc(),q3:sc(),
-          good:rnd()<.25?pick(['먼저 인사하니 다른 계열사 분들과 대화가 늘었습니다.','팀장님이 먼저 인사하셔서 자연스럽게 따라 하게 됐습니다.','짧은 인사가 회의 분위기를 바꾼다는 걸 느꼈습니다.']):'',
-          hard:rnd()<.18?pick(['층이 달라 다른 계열사 분들을 만날 기회가 적었습니다.','바쁜 주에는 잊게 됩니다. 중간 리마인드가 있으면 좋겠습니다.']):''});
+          good:rnd()<.25?pick(['먼저 인사하니 다른 그룹사 분들과 대화가 늘었습니다.','팀장님이 먼저 인사하셔서 자연스럽게 따라 하게 됐습니다.','짧은 인사가 회의 분위기를 바꾼다는 걸 느꼈습니다.']):'',
+          hard:rnd()<.18?pick(['층이 달라 다른 그룹사 분들을 만날 기회가 적었습니다.','바쁜 주에는 잊게 됩니다. 중간 리마인드가 있으면 좋겠습니다.']):''});
       }
     });
     for(let i=0;i<(no===1?9:4);i++){ const a=pick(roster), b=pick(roster); if(a!==b) db.recommends.push({ts:ts(addD(s.start,8)),campaign:no,...who(a),targetCompany:b.company,targetTeam:b.team,targetName:b.name,reason:pick(REASONS)}); }
@@ -708,7 +710,7 @@ const mock = (()=>{
   const upsert=(arr,row,keys)=>{ const i=arr.findIndex(x=>keys.every(k=>String(x[k])===String(row[k]))); if(i>=0) arr[i]=row; else arr.push(row); };
   const H={
     login(b){
-      const p=person(b.company,b.empno); if(!p) throw apiError('계열사와 사번을 확인하세요');
+      const p=person(b.company,b.empno); if(!p) throw apiError('그룹사와 사번을 확인하세요');
       let a=acc(p); if(a&&a.lockUntil>Date.now()) throw apiError(`비밀번호를 5회 잘못 입력해 잠겼습니다. ${Math.ceil((a.lockUntil-Date.now())/60000)}분 뒤 다시 시도하세요`);
       const must=!(a&&a.pw); const ok = must ? b.password===(p.initPw||p.empno) : b.password===a.pw;
       if(!ok){ a=db.accounts[p.company+'|'+p.empno]=a||{pw:'',v:0,fails:0,lockUntil:0}; a.fails++;
@@ -790,7 +792,7 @@ const mock = (()=>{
       if(!(b.table in m)) throw apiError('내려받을 수 없는 항목입니다'); return {rows:m[b.table]}; },
     logError(b){ session(b.token); return {saved:true}; },
     resetPassword(b){ const a=session(b.token); const t=person(b.company||a.scopeCompany,b.empno);
-      if(!t) throw apiError('해당 계열사 명단에 없는 사번입니다');
+      if(!t) throw apiError('해당 그룹사 명단에 없는 사번입니다');
       if(!(a.role==='HQ'||(a.role==='HR'&&t.company===a.scopeCompany))) throw apiError('이 직원의 비밀번호를 초기화할 권한이 없습니다');
       delete db.accounts[t.company+'|'+t.empno]; return {name:t.name,company:t.company}; }
   };
@@ -918,7 +920,7 @@ function viewHome(){
       </div>${posterBtn(c.no)}</div>
       <p class="muted">${esc(c.agenda)}</p>
       <div class="well"><span class="cap">오늘 단계</span><br><b>${st.k}. ${esc(st.title)}</b> <span class="cap">· ${esc(st.when)}</span></div>
-      <div class="btns"><a class="btn" href="#join">이번 캠페인 참여하기</a><a class="btn sec2" href="#c${two(c.no)}">캠페인 자세히 보기</a>${n.stage===4?'<a class="btn sec2" href="#survey">Survey 응답하기</a>':''}</div>
+      <div class="btns"><a class="btn" href="#join">이번 캠페인 참여하기</a><a class="btn sec2" href="#c${two(c.no)}">캠페인 자세히 보기</a>${(prof()?.leader||'').includes('Y')&&n.stage>=2?'<button type="button" class="btn sec2" data-act="goOpening">우리 팀 운영 방향 등록 · 확인</button>':''}</div>
     </article>`;
   } else if(n.phase==='before'||n.phase==='gap'){
     const c=CAMPAIGNS[n.next.no-1];
@@ -927,7 +929,9 @@ function viewHome(){
     now=`<article class="card pad-lg now"><span class="label">'27년 캠페인 종료</span><h2 class="slogan">한 해 동안 함께해 주셔서 감사합니다</h2><div class="btns"><a class="btn" href="#cases">사례 모아보기</a></div></article>`;
   }
   const curStage = n.phase==='run'? n.stage : 0;
-  return `
+  const tt=today(), sv=state.schedule.find(x=>tt>=x.surveyFrom&&tt<=x.surveyTo);
+  const svBar = sv ? `<a class="sv-bar" href="#survey"><span class="chip acc">Survey 진행 중</span><span>캠페인 ${two(sv.no)} 「${esc(CAMPAIGNS[sv.no-1].slogan)}」 돌아보기 · <b>${md(sv.surveyTo)}까지</b></span><span aria-hidden="true">→</span></a>` : '';
+  return `${svBar}
   <section class="hero" aria-labelledby="heroTitle">
     <div class="stack" style="gap:20px">
       <span class="label">'27년 MVC 가치체계 내재화 캠페인</span>
@@ -1031,7 +1035,7 @@ function viewLogin(){
     ${msg?`<p class="status bad" role="alert">${esc(msg)}</p>`:''}
     <div class="field"><label for="lgCo">소속 회사<span class="req" aria-hidden="true">*</span></label><select id="lgCo" name="company" required aria-describedby="eLgCo">${opt(state.companies,state._lastCo||'','회사를 선택하세요')}</select><span class="err" id="eLgCo" data-err="company"></span></div>
     <div class="field"><label for="lgNo">사번<span class="req" aria-hidden="true">*</span></label><input type="text" id="lgNo" name="empno" autocomplete="username" required aria-describedby="eLgNo"><span class="err" id="eLgNo" data-err="empno"></span></div>
-    <div class="field"><label for="lgPw">비밀번호<span class="req" aria-hidden="true">*</span></label><input type="password" id="lgPw" name="pw" autocomplete="current-password" required aria-describedby="hLgPw eLgPw"><span class="help" id="hLgPw">비밀번호를 잊었다면 소속 계열사 HR에 초기화를 요청하세요.</span><span class="err" id="eLgPw" data-err="pw" aria-live="assertive"></span></div>
+    <div class="field"><label for="lgPw">비밀번호<span class="req" aria-hidden="true">*</span></label><input type="password" id="lgPw" name="pw" autocomplete="current-password" required aria-describedby="hLgPw eLgPw"><span class="help" id="hLgPw">비밀번호를 잊었다면 소속 그룹사 HR에 초기화를 요청하세요.</span><span class="err" id="eLgPw" data-err="pw" aria-live="assertive"></span></div>
     <div class="btns"><button class="btn" type="submit">로그인</button></div>
   </form>
   ${d?`<aside class="card stack" style="gap:10px" aria-labelledby="dmT"><span class="label" id="dmT">데모 계정</span>
@@ -1039,7 +1043,7 @@ function viewLogin(){
     <div class="tbl-wrap"><table><thead><tr><th scope="col">체험</th><th scope="col">회사</th><th scope="col">사번</th><th scope="col">비밀번호</th></tr></thead><tbody>
       <tr><td>첫 로그인 (비밀번호 변경)</td><td>${esc(d.fresh.company)}</td><td class="num">${esc(d.fresh.empno)}</td><td class="num">${esc(d.fresh.empno)}</td></tr>
       <tr><td>인재경영실</td><td>${esc(d.hq.company)}</td><td class="num">${esc(d.hq.empno)}</td><td class="num">${d.pw}</td></tr>
-      <tr><td>계열사 HR (팀장 겸직)</td><td>${esc(d.hr.company)}</td><td class="num">${esc(d.hr.empno)}</td><td class="num">${d.pw}</td></tr>
+      <tr><td>그룹사 HR (팀장 겸직)</td><td>${esc(d.hr.company)}</td><td class="num">${esc(d.hr.empno)}</td><td class="num">${d.pw}</td></tr>
       <tr><td>본부장 (영업본부)</td><td>${esc(d.divhead.company)}</td><td class="num">${esc(d.divhead.empno)}</td><td class="num">${d.pw}</td></tr>
       <tr><td>팀 리더</td><td>${esc(d.lead.company)}</td><td class="num">${esc(d.lead.empno)}</td><td class="num">${d.pw}</td></tr>
     </tbody></table></div></aside>`:''}
@@ -1091,7 +1095,7 @@ async function viewJoin(){
 
 ${state.people.length ? recommendForm(p,teams) : `    <section class="card pad-lg stack" aria-labelledby="rTitle" style="gap:12px">
       <h2 class="h2" id="rTitle" style="font-size:22px">③ 동료 사례 추천</h2>
-      <p class="muted">아직 명단에 추천할 수 있는 동료가 없습니다. 명단이 등록되면 이곳에서 계열사 · 팀 · 동료를 골라 추천할 수 있습니다.</p>
+      <p class="muted">아직 명단에 추천할 수 있는 동료가 없습니다. 명단이 등록되면 이곳에서 그룹사 · 팀 · 동료를 골라 추천할 수 있습니다.</p>
     </section>`}
 
     ${mySubs.length?`<section class="stack" aria-labelledby="mineTitle"><h2 class="h2" id="mineTitle" style="font-size:22px">내가 제출한 결과물</h2><div class="grid g2">${mySubs.map(caseCard).join('')}</div></section>`:''}
@@ -1100,7 +1104,7 @@ ${state.people.length ? recommendForm(p,teams) : `    <section class="card pad-l
 function recommendForm(p,teams){ return `    <form class="card pad-lg form" data-form="recommend" aria-labelledby="rTitle" novalidate>
       <div class="sec-h"><h2 class="h2" id="rTitle" style="font-size:22px">③ 동료 사례 추천</h2><p class="muted">이번 캠페인 행동을 잘 보여준 동료를 알려주세요. 추천 사례는 시상과 사례 공유에 활용됩니다.</p></div>
       <div class="grid g3">
-        <div class="field"><label for="rCo">계열사</label><select id="rCo" name="tCo" data-change="recCo">${opt(peopleCos(),state._recCo||p.company)}</select></div>
+        <div class="field"><label for="rCo">그룹사</label><select id="rCo" name="tCo" data-change="recCo">${opt(peopleCos(),state._recCo||p.company)}</select></div>
         <div class="field"><label for="rTm">팀</label><select id="rTm" name="tTm" data-change="recTm">${opt(teams,state._recTm&&teams.includes(state._recTm)?state._recTm:teams[0])}</select></div>
         <div class="field"><label for="rNm">동료<span class="req" aria-hidden="true">*</span></label><select id="rNm" name="tNm" required aria-describedby="erNm">${opt(peopleIn(state._recCo||p.company,state._recTm&&teams.includes(state._recTm)?state._recTm:teams[0]).map(x=>x.name),'','선택하세요')}</select><span class="err" id="erNm" data-err="tNm"></span></div>
       </div>
@@ -1191,7 +1195,7 @@ function viewGuide(){
     <section class="stack" aria-labelledby="procT"><h2 class="h2" id="procT">4주 주기로 형식을 고정합니다</h2><p class="h3t">캠페인마다 새로 기획하지 않고, 같은 리듬과 같은 프로토콜로 13번 진행합니다.</p>${procList(0)}</section>
     <section class="stack" aria-labelledby="roleT"><h2 class="h2" id="roleT">주체별 역할</h2>
       <div class="tbl-wrap"><table><thead><tr><th scope="col">주체</th><th scope="col">역할</th><th scope="col">이 앱에서 하는 일</th></tr></thead><tbody>
-      ${ROLE_GUIDE.map((r,i)=>`<tr><th scope="row" style="background:transparent;color:var(--ink);font-size:14px">${esc(r[0])}</th><td class="wrap-t">${esc(r[1])}</td><td class="wrap-t muted">${['일정 설정, 스토리 카드 · 공지 문구 발송, 전체 현황과 Survey 결과 공유, 다음 캠페인 반영 메모','자기 계열사 참여율 · 미참여 팀 확인, 독려 문구 발송, 현장 사례 확인','오프닝 스크립트로 팀 회의 진행, 팀 운영 방향 · 약속 등록, 우리 팀 참여 현황 확인','실천 체크, 결과물 제출, 동료 추천, 4주차 Survey 응답'][i]}</td></tr>`).join('')}
+      ${ROLE_GUIDE.map((r,i)=>`<tr><th scope="row" style="background:transparent;color:var(--ink);font-size:14px">${esc(r[0])}</th><td class="wrap-t">${esc(r[1])}</td><td class="wrap-t muted">${['일정 설정, 스토리 카드 · 공지 문구 발송, 전체 현황과 Survey 결과 공유, 다음 캠페인 반영 메모','자기 그룹사 참여율 · 미참여 팀 확인, 독려 문구 발송, 현장 사례 확인','오프닝 스크립트로 팀 회의 진행, 팀 운영 방향 · 약속 등록, 우리 팀 참여 현황 확인','실천 체크, 결과물 제출, 동료 추천, 4주차 Survey 응답'][i]}</td></tr>`).join('')}
       </tbody></table></div></section>
     <section class="stack" aria-labelledby="svT"><h2 class="h2" id="svT">Survey와 지표</h2>
       <div class="grid g3">
@@ -1205,10 +1209,10 @@ function viewGuide(){
 }
 
 /* ===================== 화면: 관리자 ===================== */
-const ROLE_NAME={HQ:'인재경영실',HR:'계열사 HR',DIVHEAD:'본부장',LEADER:'팀장'};
+const ROLE_NAME={HQ:'인재경영실',HR:'그룹사 HR',DIVHEAD:'본부장',LEADER:'팀장'};
 async function viewAdmin(){
   const g=gate(); if(g) return g;
-  if(!state.auth) return emptyBox('관리자 권한이 없습니다','관리자 화면은 인재경영실 · 계열사 HR · 본부장 · 팀장만 볼 수 있습니다. 권한이 필요하면 인재경영실에 요청하세요.','<a class="btn" href="#join">캠페인 참여하기</a>');
+  if(!state.auth) return emptyBox('관리자 권한이 없습니다','관리자 화면은 인재경영실 · 그룹사 HR · 본부장 · 팀장만 볼 수 있습니다. 권한이 필요하면 인재경영실에 요청하세요.','<a class="btn" href="#join">캠페인 참여하기</a>');
   const n=nowInfo();
   if(!state.adminNo) state.adminNo = n.phase==='run'? n.cur.no : (n.next? n.next.no : 13);
   const no=state.adminNo;
@@ -1234,19 +1238,19 @@ function adminAccounts(){
   const a=state.auth; const cos = a.role==='HQ' ? state.companies : [a.company];
   return `<form class="card pad-lg form" data-form="resetPw" novalidate style="max-width:560px" aria-labelledby="rpT">
     <div class="sec-h"><h2 class="h2" id="rpT" style="font-size:22px">비밀번호 초기화</h2><p class="h3t">비밀번호를 잊은 직원을 초기 비밀번호로 되돌립니다.</p></div>
-    <p class="muted" style="font-size:14px">초기화하면 직원은 명단의 초기 비밀번호(비어 있으면 사번)로 다시 로그인하고, 새 비밀번호를 정해야 합니다. 5회 오류로 잠긴 계정도 바로 풀립니다.${a.role==='HR'?' 계열사 HR은 담당 계열사 직원만 초기화할 수 있습니다.':''}</p>
+    <p class="muted" style="font-size:14px">초기화하면 직원은 명단의 초기 비밀번호(비어 있으면 사번)로 다시 로그인하고, 새 비밀번호를 정해야 합니다. 5회 오류로 잠긴 계정도 바로 풀립니다.${a.role==='HR'?' 그룹사 HR은 담당 그룹사 직원만 초기화할 수 있습니다.':''}</p>
     <div class="grid g2">
-      <div class="field"><label for="rpCo">계열사</label><select id="rpCo" name="company" ${cos.length===1?'disabled':''}>${opt(cos,cos[0])}</select></div>
+      <div class="field"><label for="rpCo">그룹사</label><select id="rpCo" name="company" ${cos.length===1?'disabled':''}>${opt(cos,cos[0])}</select></div>
       <div class="field"><label for="rpNo">사번<span class="req" aria-hidden="true">*</span></label><input type="text" id="rpNo" name="empno" required aria-describedby="eRpNo"><span class="err" id="eRpNo" data-err="empno"></span></div>
     </div>
     <div class="row between"><span class="status" id="rpStatus" role="status"></span><button class="btn" type="submit">초기화</button></div>
   </form>`;
 }
 /* ===================== 관리자: 명단 · 권한 · 내려받기 (인재경영실) ===================== */
-const ROSTER_COLS=[['company','계열사'],['empno','사번'],['name','성명'],['division','본부'],['team','팀'],['position','직위'],['duty','직책'],['leader','리더구분'],['initPw','초기비밀번호']];
+const ROSTER_COLS=[['company','그룹사'],['empno','사번'],['name','성명'],['division','본부'],['team','팀'],['position','직위'],['duty','직책'],['leader','리더구분'],['initPw','초기비밀번호']];
 const LEADER_OK=new Set(['','팀장','본부장','본부장/팀장','팀장/본부장','Y','H','HY','본부장,팀장','본부장·팀장']);
 function rosterKey(h){ h=String(h||'').replace(/\s/g,'');
-  if(/리더/.test(h)) return 'leader'; if(/비밀번호/.test(h)) return 'initPw'; if(/계열사|회사/.test(h)) return 'company'; if(/사번/.test(h)) return 'empno';
+  if(/리더/.test(h)) return 'leader'; if(/비밀번호/.test(h)) return 'initPw'; if(/그룹사|계열사|회사/.test(h)) return 'company'; if(/사번/.test(h)) return 'empno';
   if(/성명|이름/.test(h)) return 'name'; if(/직위/.test(h)) return 'position'; if(/직책/.test(h)) return 'duty'; if(/^본부/.test(h)) return 'division'; if(/^팀/.test(h)) return 'team'; return null; }
 /* 엑셀에서 복사한 표(탭으로 구분)를 읽어 검사합니다. */
 function parseRoster(text){
@@ -1261,7 +1265,7 @@ function parseRoster(text){
     ROSTER_COLS.forEach(([k])=>{ o[k]=o[k]||''; });
     const ln=i+1+start;
     if(Object.values(o).every(v=>!v)) return;
-    if(!o.company||!o.empno||!o.name){ errors.push(`${ln}행: 계열사 · 사번 · 성명 중 빈 칸이 있습니다`); return; }
+    if(!o.company||!o.empno||!o.name){ errors.push(`${ln}행: 그룹사 · 사번 · 성명 중 빈 칸이 있습니다`); return; }
     if(/예시/.test(l)||(o.name==='홍길동'&&o.empno==='20210123')||(o.name==='김본부'&&o.empno==='20180045')) warns.push(`${ln}행: 양식의 예시 행으로 보입니다 (${o.name}). 지우고 올리세요`);
     const k=o.company+'|'+o.empno; if(seen.has(k)) errors.push(`${ln}행: ${o.company} 사번 ${o.empno}가 ${seen.get(k)}행과 겹칩니다`); else seen.set(k,ln);
     if(!LEADER_OK.has(o.leader.replace(/\s/g,''))) warns.push(`${ln}행: 리더구분 '${o.leader}'은(는) 팀장 · 본부장 · 본부장/팀장 중 하나로 적어 주세요`);
@@ -1283,24 +1287,24 @@ async function adminRoster(){
   const exports=[['roster','명단'],['practice','실천 체크'],['submissions','결과물'],['recommends','동료 추천'],['survey','Survey 응답 (이름 없음)'],['openings','리더 오프닝'],['visits','접속 기록'],['errors','오류 기록']];
   return `<section class="card pad-lg stack" aria-labelledby="rsT">
     <div class="sec-h"><h2 class="h2" id="rsT" style="font-size:22px">명단 현황</h2><p class="h3t">${info.updated?`마지막 업로드 ${esc(info.updated)}`:'아직 올린 명단이 없습니다'} · 비밀번호 변경 완료 = 첫 로그인을 마친 인원</p></div>
-    <div class="tbl-wrap"><table><thead><tr><th scope="col">계열사</th><th scope="col">인원</th><th scope="col">팀</th><th scope="col">팀장</th><th scope="col">본부장</th><th scope="col">비밀번호 변경 완료</th></tr></thead>
+    <div class="tbl-wrap"><table><thead><tr><th scope="col">그룹사</th><th scope="col">인원</th><th scope="col">팀</th><th scope="col">팀장</th><th scope="col">본부장</th><th scope="col">비밀번호 변경 완료</th></tr></thead>
       <tbody>${info.companies.map(c=>row(c)).join('')}${info.companies.length>1?row({company:'합계',...tot},1):''}</tbody></table></div>
   </section>
   <section class="card pad-lg stack" aria-labelledby="ruT">
-    <div class="sec-h"><h2 class="h2" id="ruT" style="font-size:22px">명단 올리기</h2><p class="h3t">① 양식을 받아 계열사에 배포 → ② 취합한 엑셀 파일을 그대로 올리기 → ③ 검사 결과 확인 후 올리기</p></div>
+    <div class="sec-h"><h2 class="h2" id="ruT" style="font-size:22px">명단 올리기</h2><p class="h3t">① 양식을 받아 그룹사에 배포 → ② 취합한 엑셀 파일을 그대로 올리기 → ③ 검사 결과 확인 후 올리기</p></div>
     <div class="row" style="gap:8px;flex-wrap:wrap">
       <a class="btn sec2" href="roster_template.xlsx" download="WinningBasic_명단_작성양식.xlsx">양식 내려받기 (.xlsx)</a>
       <input type="file" id="rosterFile" accept=".xlsx,.xls,.csv" data-change="rosterFile" class="file-in" aria-describedby="hRf">
       <label class="btn" for="rosterFile" style="cursor:pointer">엑셀 파일 올리기</label>
     </div>
-    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. 여러 계열사 파일은 한 파일로 합쳐 올리거나, '추가 · 수정' 방식으로 파일마다 차례로 올리면 됩니다.${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
+    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. 여러 그룹사 파일은 한 파일로 합쳐 올리거나, '추가 · 수정' 방식으로 파일마다 차례로 올리면 됩니다.${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
     <details${state._rosterText&&!state._rosterFile?' open':''}><summary class="cap" style="cursor:pointer">또는 엑셀에서 복사해 붙여넣기</summary>
-    <div class="field" style="margin-top:10px"><label for="rosterPaste">명단 붙여넣기</label><textarea id="rosterPaste" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="계열사&#9;사번&#9;성명&#9;본부&#9;팀&#9;직위&#9;직책&#9;리더구분&#9;초기비밀번호" aria-describedby="hRp">${esc(state._rosterText||'')}</textarea><span class="help" id="hRp">머리글이 있으면 열 순서가 달라도 됩니다. 머리글이 없으면 양식 순서(계열사 · 사번 · 성명 · 본부 · 팀 · 직위 · 직책 · 리더구분 · 초기비밀번호)로 읽습니다.</span></div>
+    <div class="field" style="margin-top:10px"><label for="rosterPaste">명단 붙여넣기</label><textarea id="rosterPaste" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="그룹사&#9;사번&#9;성명&#9;본부&#9;팀&#9;직위&#9;직책&#9;리더구분&#9;초기비밀번호" aria-describedby="hRp">${esc(state._rosterText||'')}</textarea><span class="help" id="hRp">머리글이 있으면 열 순서가 달라도 됩니다. 머리글이 없으면 양식 순서(그룹사 · 사번 · 성명 · 본부 · 팀 · 직위 · 직책 · 리더구분 · 초기비밀번호)로 읽습니다.</span></div>
     <div class="btns"><button type="button" class="btn sec2" data-act="rosterCheck">검사하기</button></div></details>
     ${pv?`<div class="stack" style="gap:12px" aria-live="polite">
       <p><b>${pv.rows.length}명</b> · ${Object.entries(pv.byCo).map(([c,n])=>`${esc(c)} ${n}명`).join(' · ')}</p>
       ${pv.errors.length?`<div class="status bad" role="alert"><b>고쳐야 올릴 수 있어요 (${pv.errors.length}건)</b><ul style="margin:6px 0 0 18px">${pv.errors.slice(0,15).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
-      ${pv.warns.length||pv.newCo.length?`<div class="status warn"><b>확인해 주세요</b><ul style="margin:6px 0 0 18px">${pv.newCo.map(c=>`<li>새 계열사 이름: '${esc(c)}' (기존 표기와 같은지 확인)</li>`).join('')}${pv.warns.slice(0,15).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
+      ${pv.warns.length||pv.newCo.length?`<div class="status warn"><b>확인해 주세요</b><ul style="margin:6px 0 0 18px">${pv.newCo.map(c=>`<li>새 그룹사 이름: '${esc(c)}' (기존 표기와 같은지 확인)</li>`).join('')}${pv.warns.slice(0,15).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`:''}
       ${pv.noLead.length?`<p class="cap">팀장이 지정되지 않은 팀 ${pv.noLead.length}개: ${pv.noLead.slice(0,8).map(esc).join(', ')}${pv.noLead.length>8?' 외':''}</p>`:''}
       <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="flabel">올리는 방식</legend>
         <label class="row" style="gap:8px"><input type="radio" name="rMode" value="merge" ${state._rMode!=='replace'?'checked':''} data-change="rMode"> 추가 · 수정 (기존 명단은 그대로 두고 같은 사번은 고침)</label>
@@ -1310,16 +1314,16 @@ async function adminRoster(){
     </div>`:''}
   </section>
   <section class="card pad-lg stack" aria-labelledby="auT">
-    <div class="sec-h"><h2 class="h2" id="auT" style="font-size:22px">관리자 권한</h2><p class="h3t">인재경영실(HQ)은 그룹 전체, 계열사 HR(HR)은 담당 계열사를 봅니다. 팀장 · 본부장은 명단의 리더구분으로 자동 지정됩니다.</p></div>
-    <div class="tbl-wrap"><table><thead><tr><th scope="col">성명</th><th scope="col">계열사</th><th scope="col">사번</th><th scope="col">권한</th><th scope="col">담당 계열사</th><th scope="col"><span class="skip">삭제</span></th></tr></thead><tbody>
-      ${info.auth.length?info.auth.map(u=>`<tr><td>${esc(u.name||'(명단에 없음)')}</td><td>${esc(u.company)}</td><td class="num">${esc(u.empno)}</td><td>${u.role==='HQ'?'인재경영실':'계열사 HR'}</td><td>${esc(u.role==='HR'?(u.scopeCompany||u.company):'그룹 전체')}</td><td>${u.company===prof().company&&u.empno===prof().empno?'':`<button type="button" class="btn ghost sm" data-act="authDel" data-co="${esc(u.company)}" data-no="${esc(u.empno)}" data-name="${esc(u.name||u.empno)}">삭제</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="cap">지정된 권한이 없습니다</td></tr>'}
+    <div class="sec-h"><h2 class="h2" id="auT" style="font-size:22px">관리자 권한</h2><p class="h3t">인재경영실(HQ)은 그룹 전체, 그룹사 HR(HR)은 담당 그룹사를 봅니다. 팀장 · 본부장은 명단의 리더구분으로 자동 지정됩니다.</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th scope="col">성명</th><th scope="col">그룹사</th><th scope="col">사번</th><th scope="col">권한</th><th scope="col">담당 그룹사</th><th scope="col"><span class="skip">삭제</span></th></tr></thead><tbody>
+      ${info.auth.length?info.auth.map(u=>`<tr><td>${esc(u.name||'(명단에 없음)')}</td><td>${esc(u.company)}</td><td class="num">${esc(u.empno)}</td><td>${u.role==='HQ'?'인재경영실':'그룹사 HR'}</td><td>${esc(u.role==='HR'?(u.scopeCompany||u.company):'그룹 전체')}</td><td>${u.company===prof().company&&u.empno===prof().empno?'':`<button type="button" class="btn ghost sm" data-act="authDel" data-co="${esc(u.company)}" data-no="${esc(u.empno)}" data-name="${esc(u.name||u.empno)}">삭제</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="cap">지정된 권한이 없습니다</td></tr>'}
     </tbody></table></div>
     <form class="form" data-form="authSet" novalidate aria-label="권한 추가">
       <div class="grid g2">
-        <div class="field"><label for="auCo">계열사</label><select id="auCo" name="company">${opt(cos,cos[0])}</select></div>
+        <div class="field"><label for="auCo">그룹사</label><select id="auCo" name="company">${opt(cos,cos[0])}</select></div>
         <div class="field"><label for="auNo">사번<span class="req" aria-hidden="true">*</span></label><input type="text" id="auNo" name="empno" required aria-describedby="eAuNo"><span class="err" id="eAuNo" data-err="empno"></span></div>
-        <div class="field"><label for="auRole">권한</label><select id="auRole" name="role"><option value="HR">계열사 HR</option><option value="HQ">인재경영실</option></select></div>
-        <div class="field"><label for="auScope">담당 계열사 (HR · 비우면 소속 계열사)</label><select id="auScope" name="scope">${opt(cos,'','소속 계열사')}</select></div>
+        <div class="field"><label for="auRole">권한</label><select id="auRole" name="role"><option value="HR">그룹사 HR</option><option value="HQ">인재경영실</option></select></div>
+        <div class="field"><label for="auScope">담당 그룹사 (HR · 비우면 소속 그룹사)</label><select id="auScope" name="scope">${opt(cos,'','소속 그룹사')}</select></div>
       </div>
       <div class="row between"><span class="status" id="auStatus" role="status"></span><button class="btn" type="submit">권한 저장</button></div>
     </form>
@@ -1352,7 +1356,7 @@ function downloadCsv(rows, filename){
 
 /* ===== 조직(그룹사 · 본부 · 팀) 필터와 집계 ===== */
 const DIV_NONE='본부 미지정';
-const LEVEL_NAME={company:'계열사',division:'본부',team:'팀'};
+const LEVEL_NAME={company:'그룹사',division:'본부',team:'팀'};
 function orgLabel(r,level){
   const dv=r.division&&r.division!==DIV_NONE ? r.division : '';
   if(level==='company') return r.company;
@@ -1390,7 +1394,7 @@ function filterBar(d){
   const o=(list,sel)=>list.map(v=>`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(v)}</option>`).join('');
   const canReset = (a.role==='HQ'&&f.co) || (a.role==='HR'&&f.div) || f.team;
   return `<div class="filters" role="group" aria-label="조회 범위">
-    <div class="field"><label for="fCo">그룹사</label><select id="fCo" data-change="fCo" ${a.role!=='HQ'?'disabled aria-describedby="hfCo"':''}>${a.role==='HQ'?'<option value="">그룹 전체</option>':''}${o(cos,f.co)}</select>${a.role!=='HQ'?`<span class="help" id="hfCo">${a.role==='HR'?'담당 계열사만':'소속 본부만'} 조회할 수 있습니다</span>`:''}</div>
+    <div class="field"><label for="fCo">그룹사</label><select id="fCo" data-change="fCo" ${a.role!=='HQ'?'disabled aria-describedby="hfCo"':''}>${a.role==='HQ'?'<option value="">그룹 전체</option>':''}${o(cos,f.co)}</select>${a.role!=='HQ'?`<span class="help" id="hfCo">${a.role==='HR'?'담당 그룹사만':'소속 본부만'} 조회할 수 있습니다</span>`:''}</div>
     <div class="field"><label for="fDiv">본부</label><select id="fDiv" data-change="fDiv" ${f.co&&a.role!=='DIVHEAD'?'':'disabled'}><option value="">${f.co?'본부 전체':'그룹사를 먼저 고르세요'}</option>${o(divs,f.div)}</select></div>
     <div class="field"><label for="fTeam">팀</label><select id="fTeam" data-change="fTeam" ${f.div?'':'disabled'}><option value="">${f.div?'팀 전체':'본부를 먼저 고르세요'}</option>${o(teams,f.team)}</select></div>
     ${canReset?'<button type="button" class="btn ghost sm" data-act="fReset">범위 초기화</button>':''}
@@ -1406,17 +1410,19 @@ function aggregate(d, level){
   if(level==='team') Object.keys(teams).forEach(k=>{ groups[k].leader=teams[k].leader; teams[k]=groups[k]; });
   Object.values(teams).forEach(t=>{ const g=groups[t.key.split('|').slice(0, level==='company'?1:level==='division'?2:3).join('|')]; if(g&&level!=='team'&&t.leader) g.teams++; });
   if(level==='team') Object.values(groups).forEach(g=>g.teams=g.leader?1:0);
-  const part=new Map(); [...d.practice,...d.submissions].forEach(r=>part.set(r.company+'|'+r.empno,r));
-  part.forEach(r=>inc(r,'part'));
-  d.submissions.forEach(r=>inc(r,'subs'));
-  d.recommends.forEach(r=>inc(r,'recs'));
+  // 참여 · 결과물 · 추천은 현재 명단 기준으로 셉니다(퇴사자 제외, 팀을 옮긴 사람은 지금 팀으로).
+  const who=new Map(d.roster.map(r=>[r.company+'|'+r.empno,r])), cur=r=>who.get(r.company+'|'+r.empno);
+  const part=new Map(); [...d.practice,...d.submissions].forEach(r=>{ const p=cur(r); if(p) part.set(r.company+'|'+r.empno,p); });
+  part.forEach(p=>inc(p,'part'));
+  d.submissions.forEach(r=>{ const p=cur(r); if(p) inc(p,'subs'); });
+  d.recommends.forEach(r=>{ const p=cur(r); if(p) inc(p,'recs'); });
   d.surveyResp.forEach(s=>{ const xs=[groups[orgKey(s,level)]]; if(level!=='team') xs.push(teams[orgKey(s,'team')]);
     xs.forEach(x=>{ if(!x) return; x.svN++; x.q1.push(s.q1); if(s.q2!=null) x.q2.push(s.q2); x.q3.push(s.q3); }); });
   const opened=new Set(d.openings.map(o=>orgKey(o,'team')));
   Object.values(teams).forEach(t=>{ t.opened=opened.has(t.key)?1:0; });
   if(level!=='team') Object.values(teams).forEach(t=>{ if(!t.opened) return; const g=groups[t.key.split('|').slice(0, level==='company'?1:2).join('|')]; if(g) g.opened++; });
   const sv=d.surveyResp;
-  return {level, target:d.roster.length, part:part.size, subs:d.submissions.length, recs:d.recommends.length, svN:d.surveyPart.length,
+  return {level, target:d.roster.length, part:part.size, subs:d.submissions.filter(cur).length, recs:d.recommends.filter(cur).length, svN:d.surveyPart.length,
     q1:avg(sv.map(s=>s.q1)), q2:avg(sv.filter(s=>s.q2!=null).map(s=>s.q2)), q2n:sv.filter(s=>s.q2!=null).length, q3:avg(sv.map(s=>s.q3)),
     groups:Object.values(groups), teams:Object.values(teams), teamCount:Object.values(teams).filter(t=>!t.key.endsWith('|본부 직속')).length, ledCount:Object.values(teams).filter(t=>t.leader).length, opened:Object.values(teams).filter(t=>t.opened).length,
     good:sv.filter(s=>s.good).map(s=>({t:s.good,org:orgLabel(s,'team')})), hard:sv.filter(s=>s.hard).map(s=>({t:s.hard,org:orgLabel(s,'team')}))};
@@ -1451,7 +1457,9 @@ function adminRun(d,no,n){
   const op=(d.ops||[]).find(o=>Number(o.campaign)===no&&Number(o.stage)===stage);
   const opDone = op && (op.done===true||op.done==='TRUE'||op.done==='true');
   const hqBar = state.auth.role==='HQ' ? `<div class="row between well"><span class="muted">${stage}단계 「${esc(STAGES[stage-1].title)}」 진행을 마쳤으면 완료로 표시하세요.</span><button class="btn sm ${opDone?'line':''}" data-act="opsDone" data-k="${stage}" data-done="${opDone?'0':'1'}">${opDone?'완료 취소':'완료로 표시'}</button></div>`:'';
-  return head+filterBar(d)+stages+scopeLine+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
+  const needOpen = (prof()?.leader||'').includes('Y') && !d.myOpening && stage!==2 && t>=s.stages[1].from;
+  const openBar = needOpen ? `<div class="row between well" role="status"><span><b>우리 팀 운영 방향이 아직 등록되지 않았습니다.</b> <span class="muted">팀 약속과 주기 · 기한을 정해 등록하세요.</span></span><button type="button" class="btn sm" data-act="adminStage" data-k="2">지금 등록</button></div>` : '';
+  return head+openBar+filterBar(d)+stages+scopeLine+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
 }
 function appUrl(){ return CONFIG.APP_URL || location.href.split('#')[0]; }
 function copyBlock(id,label,text,rows){ return `<div class="copybox"><label for="${id}" class="flabel">${esc(label)}</label><textarea id="${id}" readonly ${rows?`style="min-height:${rows}px"`:''}>${esc(text)}</textarea><div class="btns"><button class="btn sm" data-act="copy" data-target="${id}">문구 복사</button></div></div>`; }
@@ -1627,7 +1635,7 @@ async function render(focus){
   maybeAutoStory(ROUTES[route]?route:'home');
   if(focus){ window.scrollTo(0,0); main.focus({preventScroll:true}); }
 }
-window.addEventListener('hashchange',()=>{ state.adminStage=null; render(true); });
+window.addEventListener('hashchange',()=>{ state.adminStage=state._goStage||null; state._goStage=null; render(true); });
 $('#storyDlgX').addEventListener('click',closeStory);
 $('#storyDlg').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeStory(); });
 
@@ -1642,6 +1650,7 @@ const ACTIONS={
   copy(b){ const ta=document.getElementById(b.dataset.target); copyText(ta.value, ta); },
   logout(){ clearSession(); state._curPw=null; toast('로그아웃했습니다'); render(true); },
   adminTab(b){ state.adminTab=b.dataset.k; render(); },
+  goOpening(){ state.adminTab='run'; state.adminNo=null; if(location.hash==='#admin'){ state.adminStage=2; render(); } else { state._goStage=2; location.hash='admin'; } },
   rosterCheck(){ const t=$('#rosterPaste').value; state._rosterText=t; state._rosterFile=''; state._rosterPv=parseRoster(t); if(!state._rosterPv) toast('붙여넣은 명단이 없습니다'); render(); },
   async rosterUpload(b){
     const pv=state._rosterPv; if(!pv||pv.errors.length) return; const mode=state._rMode==='replace'?'replace':'merge';
@@ -1827,12 +1836,12 @@ const THEME_UI={
   dark:{label:'다크',icon:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.6A5.75 5.75 0 0 1 6.4 2.5a5.75 5.75 0 1 0 7.1 7.1z" fill="currentColor"/></svg>'}
 };
 /* ===================== 푸터 · 개인정보 안내 ===================== */
-function renderFooter(){ $('#contactLine').textContent = `문의 · 비밀번호는 소속 계열사 HR, 앱 오류는 ${CONFIG.CONTACT||'인재경영실'}`; }
+function renderFooter(){ $('#contactLine').textContent = `문의 · 비밀번호는 소속 그룹사 HR, 앱 오류는 ${CONFIG.CONTACT||'인재경영실'}`; }
 function privacyHtml(){
   return `<dl>
-    <dt>수집 항목</dt><dd>인재경영실이 등록한 명단(계열사, 사번, 성명, 본부, 팀, 직위, 직책, 리더 구분)과 앱에서 입력한 내용(실천 체크, 결과물, 동료 추천, 리더 오프닝, Survey 응답, 접속일)</dd>
+    <dt>수집 항목</dt><dd>인재경영실이 등록한 명단(그룹사, 사번, 성명, 본부, 팀, 직위, 직책, 리더 구분)과 앱에서 입력한 내용(실천 체크, 결과물, 동료 추천, 리더 오프닝, Survey 응답, 접속일)</dd>
     <dt>이용 목적</dt><dd>'27 MVC 가치체계 내재화 캠페인 운영, 참여 현황 집계, 우수 사례 공유</dd>
-    <dt>열람 범위</dt><dd>인재경영실(그룹 전체), 계열사 HR(담당 계열사), 본부장·팀장(자기 본부·팀 집계)</dd>
+    <dt>열람 범위</dt><dd>인재경영실(그룹 전체), 그룹사 HR(담당 그룹사), 본부장·팀장(자기 본부·팀 집계)</dd>
     <dt>공개되는 것</dt><dd>결과물은 '공개'를 고른 경우에만 사례 화면에 이름과 함께 보입니다. 동료 추천은 추천받은 사람의 이름과 추천 이유가 사례 화면에 보입니다.</dd>
     <dt>Survey</dt><dd>응답은 이름 · 사번과 분리해 저장합니다. 응답이 3명 미만인 팀은 리더 관련 점수를 보여주지 않습니다.</dd>
     <dt>보관 기간</dt><dd>${esc(CONFIG.KEEP||'[보관 기간 확정 후 기입]')}. 기간이 지나면 지체 없이 파기합니다.</dd>
