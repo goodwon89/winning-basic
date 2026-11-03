@@ -771,23 +771,26 @@ const mock = (()=>{
     saveSettings(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); db.settings={startDate:b.startDate,skipWeeks:b.skipWeeks}; return {saved:true}; },
     opsUpdate(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); upsert(db.ops,{campaign:b.campaign,stage:b.stage,done:!!b.done,memo:b.memo||''},['campaign','stage']); return {saved:true}; },
     visit(b){ session(b.token); return {saved:true}; },
-    rosterInfo(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다');
-      const cos=[...new Set(roster.map(r=>r.company))];
+    rosterInfo(b){ const a=session(b.token); if(a.role!=='HQ'&&a.role!=='HR') throw apiError('인재경영실 또는 그룹사 HR 권한이 필요합니다');
+      const cos=(db.companies||[...new Set(roster.map(r=>r.company))]).filter(c=>a.role==='HQ'||c===a.scopeCompany);
       return {updated:'데모', companies:cos.map(c=>{ const rs=roster.filter(r=>r.company===c); return {company:c,people:rs.length,teams:new Set(rs.map(r=>r.division+'|'+r.team)).size,leaders:rs.filter(r=>r.leader.includes('Y')).length,heads:rs.filter(r=>r.leader.includes('H')).length,activated:rs.filter(r=>db.accounts[r.company+'|'+r.empno]).length}; }),
-        auth:db.auth.map(u=>({...u,name:(person(u.company,u.empno)||{}).name}))}; },
-    rosterUpload(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다');
-      const rows=b.rows||[]; if(b.mode==='replace'&&!rows.some(r=>r.company===a.company&&r.empno===a.empno)) throw apiError('올리는 명단에 본인이 없습니다. 본인이 빠지면 관리자 화면에 들어올 수 없습니다');
+        others:[], auth:a.role==='HQ'?db.auth.map(u=>({...u,name:(person(u.company,u.empno)||{}).name})):[]}; },
+    saveCompanies(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); const bad=[...new Set(roster.map(r=>r.company))].filter(c=>!b.companies.includes(c)); if(bad.length) throw apiError('명단이 있는 그룹사는 뺄 수 없습니다: '+bad.join(', ')); db.companies=[...b.companies]; return {saved:true,companies:db.companies}; },
+    rosterUpload(b){ const a=session(b.token); if(a.role!=='HQ'&&a.role!=='HR') throw apiError('인재경영실 또는 그룹사 HR 권한이 필요합니다');
+      const rows=b.rows||[]; const cos=[...new Set(rows.map(r=>r.company))];
+      if(a.role==='HR'&&cos.some(c=>c!==a.scopeCompany)) throw apiError('담당 그룹사 명단만 올릴 수 있습니다');
+      if(b.mode==='replace'&&cos.includes(a.company)&&!rows.some(r=>r.company===a.company&&r.empno===a.empno)) throw apiError('올리는 명단에 본인이 없습니다. 본인이 빠지면 관리자 화면에 들어올 수 없습니다');
       let ins=0,upd=0,rem=0; const lc=s=>{ const u=String(s||'').toUpperCase(); return (/본부장|H/.test(u)?'H':'')+(/팀장|Y/.test(u)?'Y':''); };
-      rows.forEach(r=>{ const o={company:r.company,empno:r.empno,name:r.name,division:r.division||'본부 미지정',team:r.team||(lc(r.leader)==='H'?'본부 직속':'팀 미지정'),position:r.position||'',duty:r.duty||'',leader:lc(r.leader),initPw:r.initPw||''};
+      rows.forEach(r=>{ const o={company:r.company,empno:r.empno,name:r.name,division:r.division||'본부/실 미지정',team:r.team||(lc(r.leader)==='H'?'본부 직속':'팀 미지정'),position:r.position||'',duty:r.duty||'',leader:lc(r.leader),initPw:r.initPw||''};
         const i=roster.findIndex(x=>x.company===o.company&&x.empno===o.empno); if(i>=0){ roster[i]=o; upd++; } else { roster.push(o); ins++; } });
-      if(b.mode==='replace'){ for(let i=roster.length-1;i>=0;i--){ if(!rows.some(r=>r.company===roster[i].company&&r.empno===roster[i].empno)){ roster.splice(i,1); rem++; } } }
+      if(b.mode==='replace'){ for(let i=roster.length-1;i>=0;i--){ if(cos.includes(roster[i].company)&&!rows.some(r=>r.company===roster[i].company&&r.empno===roster[i].empno)){ roster.splice(i,1); rem++; } } }
       return {inserted:ins,updated:upd,removed:rem,total:roster.length}; },
     authSet(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다');
       if(!person(b.company,b.empno)) throw apiError('명단에 없는 사람입니다. 명단을 먼저 올리세요');
       if(b.company===a.company&&b.empno===a.empno&&b.role!=='HQ') throw apiError('본인의 인재경영실 권한은 바꿀 수 없습니다');
       const i=db.auth.findIndex(x=>x.company===b.company&&x.empno===b.empno); if(i>=0) db.auth.splice(i,1);
       if(b.role) db.auth.push({company:b.company,empno:b.empno,role:b.role,scopeCompany:b.scopeCompany||''}); return {saved:true}; },
-    export(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다');
+    export(b){ const a=session(b.token); if(a.role!=='HQ'&&a.role!=='HR') throw apiError('인재경영실 또는 그룹사 HR 권한이 필요합니다');
       const m={roster:roster.map(({initPw,...r})=>r),practice:db.practice,submissions:db.submissions,recommends:db.recommends,survey:db.surveyResp,openings:db.openings,visits:[],errors:[]};
       if(!(b.table in m)) throw apiError('내려받을 수 없는 항목입니다'); return {rows:m[b.table]}; },
     logError(b){ session(b.token); return {saved:true}; },
@@ -798,7 +801,7 @@ const mock = (()=>{
   };
   return {
     demoAccounts:{hq,hr,lead,divhead,fresh,pw:DEMO_PW},
-    bootstrap(){ return out({settings:db.settings,companies:[...new Set(roster.map(r=>r.company))]}); },
+    bootstrap(){ db.companies=db.companies||[...new Set(roster.map(r=>r.company))]; return out({settings:db.settings,companies:db.companies}); },
     call(action,b){
       try{
         const fn = ['practice','submit','recommend','survey','opening'].includes(action) ? ()=>H.write(action,b) : H[action] ? ()=>H[action](b) : null;
@@ -1195,7 +1198,7 @@ function viewGuide(){
     <section class="stack" aria-labelledby="procT"><h2 class="h2" id="procT">4주 주기로 형식을 고정합니다</h2><p class="h3t">캠페인마다 새로 기획하지 않고, 같은 리듬과 같은 프로토콜로 13번 진행합니다.</p>${procList(0)}</section>
     <section class="stack" aria-labelledby="roleT"><h2 class="h2" id="roleT">주체별 역할</h2>
       <div class="tbl-wrap"><table><thead><tr><th scope="col">주체</th><th scope="col">역할</th><th scope="col">이 앱에서 하는 일</th></tr></thead><tbody>
-      ${ROLE_GUIDE.map((r,i)=>`<tr><th scope="row" style="background:transparent;color:var(--ink);font-size:14px">${esc(r[0])}</th><td class="wrap-t">${esc(r[1])}</td><td class="wrap-t muted">${['일정 설정, 스토리 카드 · 공지 문구 발송, 전체 현황과 Survey 결과 공유, 다음 캠페인 반영 메모','자기 그룹사 참여율 · 미참여 팀 확인, 독려 문구 발송, 현장 사례 확인','오프닝 스크립트로 팀 회의 진행, 팀 운영 방향 · 약속 등록, 우리 팀 참여 현황 확인','실천 체크, 결과물 제출, 동료 추천, 4주차 Survey 응답'][i]}</td></tr>`).join('')}
+      ${ROLE_GUIDE.map((r,i)=>`<tr><th scope="row" style="background:transparent;color:var(--ink);font-size:14px">${esc(r[0])}</th><td class="wrap-t">${esc(r[1])}</td><td class="wrap-t muted">${['일정 설정, 스토리 카드 · 공지 문구 발송, 전체 현황과 Survey 결과 공유, 다음 캠페인 반영 메모','자사 명단 올리기 · 비밀번호 초기화, 자기 그룹사 참여율 · 미참여 팀 확인, 독려 문구 발송, 현장 사례 확인','오프닝 스크립트로 팀 회의 진행, 팀 운영 방향 · 약속 등록, 우리 팀 참여 현황 확인','실천 체크, 결과물 제출, 동료 추천, 4주차 Survey 응답'][i]}</td></tr>`).join('')}
       </tbody></table></div></section>
     <section class="stack" aria-labelledby="svT"><h2 class="h2" id="svT">Survey와 지표</h2>
       <div class="grid g3">
@@ -1219,11 +1222,11 @@ async function viewAdmin(){
   const data = normOrg(await api.call('adminData',{campaign:no}));
   state.adminData=data;
   const a=state.auth; const scope = a.role==='HQ'?'그룹 전체':a.role==='HR'?a.company:a.role==='DIVHEAD'?`${a.company} ${a.division}`:`${a.company} ${a.team}`;
-  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role==='HQ'||a.role==='HR') tabs.push(['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['roster','명단 · 권한'],['settings','일정 설정']);
+  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role==='HQ'||a.role==='HR') tabs.push(['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['roster','명단 · 권한'],['settings','설정']); else if(a.role==='HR') tabs.push(['roster','명단 관리']);
   if(!tabs.some(t=>t[0]===state.adminTab)) state.adminTab='run';
   let body='';
   if(state.adminTab==='year') body=adminYear(data);
-  else if(state.adminTab==='settings') body=adminSettings(data);
+  else if(state.adminTab==='settings') body=adminCompanies()+adminSettings(data);
   else if(state.adminTab==='accounts') body=adminAccounts();
   else if(state.adminTab==='roster') body=await adminRoster();
   else body=adminRun(data,no,n);
@@ -1247,7 +1250,7 @@ function adminAccounts(){
   </form>`;
 }
 /* ===================== 관리자: 명단 · 권한 · 내려받기 (인재경영실) ===================== */
-const ROSTER_COLS=[['company','그룹사'],['empno','사번'],['name','성명'],['division','본부'],['team','팀'],['position','직위'],['duty','직책'],['leader','리더구분'],['initPw','초기비밀번호']];
+const ROSTER_COLS=[['company','그룹사'],['empno','사번'],['name','성명'],['division','본부/실'],['team','팀'],['position','직위'],['duty','직책'],['leader','리더구분'],['initPw','초기비밀번호']];
 const LEADER_OK=new Set(['','팀장','본부장','본부장/팀장','팀장/본부장','Y','H','HY','본부장,팀장','본부장·팀장']);
 function rosterKey(h){ h=String(h||'').replace(/\s/g,'');
   if(/리더/.test(h)) return 'leader'; if(/비밀번호/.test(h)) return 'initPw'; if(/그룹사|계열사|회사/.test(h)) return 'company'; if(/사번/.test(h)) return 'empno';
@@ -1271,35 +1274,38 @@ function parseRoster(text){
     if(!LEADER_OK.has(o.leader.replace(/\s/g,''))) warns.push(`${ln}행: 리더구분 '${o.leader}'은(는) 팀장 · 본부장 · 본부장/팀장 중 하나로 적어 주세요`);
     rows.push(o);
   });
-  const leaders={}; rows.forEach(r=>{ const lc=r.leader.replace(/\s/g,''); if(/팀장|Y/.test(lc)&&r.team){ const k=`${r.company} · ${r.division||'본부 미지정'} · ${r.team}`; leaders[k]=(leaders[k]||0)+1; } });
+  const leaders={}; rows.forEach(r=>{ const lc=r.leader.replace(/\s/g,''); if(/팀장|Y/.test(lc)&&r.team){ const k=`${r.company} · ${r.division||'본부/실 미지정'} · ${r.team}`; leaders[k]=(leaders[k]||0)+1; } });
   Object.entries(leaders).filter(([,n])=>n>1).forEach(([k,n])=>warns.push(`${k}: 팀장이 ${n}명입니다`));
-  const teams=new Set(rows.filter(r=>r.team).map(r=>`${r.company} · ${r.division||'본부 미지정'} · ${r.team}`));
+  const teams=new Set(rows.filter(r=>r.team).map(r=>`${r.company} · ${r.division||'본부/실 미지정'} · ${r.team}`));
   const noLead=[...teams].filter(t=>!leaders[t]);
   const byCo={}; rows.forEach(r=>byCo[r.company]=(byCo[r.company]||0)+1);
-  const newCo=Object.keys(byCo).filter(c=>state.companies.length&&!state.companies.includes(c));
+  Object.keys(byCo).filter(c=>!state.companies.includes(c)).forEach(c=>errors.unshift(`그룹사 이름 '${c}'이(가) 등록된 이름과 다릅니다 (${byCo[c]}명). 등록된 이름: ${state.companies.join(', ')}`));
+  const a=state.auth; if(a&&a.role==='HR'){ const other=Object.keys(byCo).filter(c=>c!==a.company); if(other.length) errors.unshift(`담당 그룹사(${a.company}) 명단만 올릴 수 있습니다. 다른 그룹사: ${other.join(', ')}`); }
+  const newCo=[];
   return {rows,errors,warns,noLead,byCo,newCo,mapped:cols.filter(Boolean)};
 }
 async function adminRoster(){
-  const info=await api.call('rosterInfo'); const pv=state._rosterPv;
+  const info=await api.call('rosterInfo'); const pv=state._rosterPv; const isHQ=state.auth.role==='HQ';
   const tot=info.companies.reduce((t,c)=>({people:t.people+c.people,teams:t.teams+c.teams,leaders:t.leaders+c.leaders,heads:t.heads+c.heads,activated:t.activated+c.activated}),{people:0,teams:0,leaders:0,heads:0,activated:0});
   const row=(c,b)=>`<tr${b?' style="font-weight:600"':''}><td>${esc(c.company)}</td><td class="num">${c.people}</td><td class="num">${c.teams}</td><td class="num">${c.leaders}</td><td class="num">${c.heads}</td><td class="num">${c.activated} <span class="cap">(${pct(c.activated,c.people)}%)</span></td></tr>`;
   const cos=info.companies.map(c=>c.company);
-  const exports=[['roster','명단'],['practice','실천 체크'],['submissions','결과물'],['recommends','동료 추천'],['survey','Survey 응답 (이름 없음)'],['openings','리더 오프닝'],['visits','접속 기록'],['errors','오류 기록']];
+  const exports=[['roster','명단'],['practice','실천 체크'],['submissions','결과물'],['recommends','동료 추천'],['survey','Survey 응답 (이름 없음)'],['openings','리더 오프닝'],['visits','접속 기록'],...(isHQ?[['errors','오류 기록']]:[])];
   return `<section class="card pad-lg stack" aria-labelledby="rsT">
-    <div class="sec-h"><h2 class="h2" id="rsT" style="font-size:22px">명단 현황</h2><p class="h3t">${info.updated?`마지막 업로드 ${esc(info.updated)}`:'아직 올린 명단이 없습니다'} · 비밀번호 변경 완료 = 첫 로그인을 마친 인원</p></div>
+    <div class="sec-h"><h2 class="h2" id="rsT" style="font-size:22px">명단 현황${isHQ?'':` <span class="cap">${esc(state.auth.company)}</span>`}</h2><p class="h3t">${info.updated?`마지막 업로드 ${esc(info.updated)}`:'아직 올린 명단이 없습니다'} · 비밀번호 변경 완료 = 첫 로그인을 마친 인원</p></div>
+    ${info.others&&info.others.length?`<div class="status warn" role="status">그룹사 목록에 없는 이름으로 올라간 명단이 있습니다: ${info.others.map(esc).join(', ')}. 바른 이름으로 다시 올린 뒤 정리하세요.</div>`:''}
     <div class="tbl-wrap"><table><thead><tr><th scope="col">그룹사</th><th scope="col">인원</th><th scope="col">팀</th><th scope="col">팀장</th><th scope="col">본부장</th><th scope="col">비밀번호 변경 완료</th></tr></thead>
       <tbody>${info.companies.map(c=>row(c)).join('')}${info.companies.length>1?row({company:'합계',...tot},1):''}</tbody></table></div>
   </section>
   <section class="card pad-lg stack" aria-labelledby="ruT">
-    <div class="sec-h"><h2 class="h2" id="ruT" style="font-size:22px">명단 올리기</h2><p class="h3t">① 양식을 받아 그룹사에 배포 → ② 취합한 엑셀 파일을 그대로 올리기 → ③ 검사 결과 확인 후 올리기</p></div>
+    <div class="sec-h"><h2 class="h2" id="ruT" style="font-size:22px">명단 올리기</h2><p class="h3t">${isHQ?'① 양식을 받아 그룹사에 배포 → ② 취합한 엑셀 파일을 그대로 올리기 → ③ 검사 결과 확인 후 올리기':`① 양식 내려받기 → ② ${esc(state.auth.company)} 명단 작성 → ③ 파일 올리기 → ④ 검사 결과 확인 후 올리기`}</p></div>
     <div class="row" style="gap:8px;flex-wrap:wrap">
       <a class="btn sec2" href="roster_template.xlsx" download="WinningBasic_명단_작성양식.xlsx">양식 내려받기 (.xlsx)</a>
       <input type="file" id="rosterFile" accept=".xlsx,.xls,.csv" data-change="rosterFile" class="file-in" aria-describedby="hRf">
       <label class="btn" for="rosterFile" style="cursor:pointer">엑셀 파일 올리기</label>
     </div>
-    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. 여러 그룹사 파일은 한 파일로 합쳐 올리거나, '추가 · 수정' 방식으로 파일마다 차례로 올리면 됩니다.${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
+    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. ${isHQ?'여러 그룹사 파일은 한 파일로 합치거나 파일마다 차례로 올리면 됩니다.':'담당 그룹사 명단만 올릴 수 있습니다.'} 그룹사 이름은 ${state.companies.map(esc).join(' · ')} 중 하나로 적습니다.${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
     <details${state._rosterText&&!state._rosterFile?' open':''}><summary class="cap" style="cursor:pointer">또는 엑셀에서 복사해 붙여넣기</summary>
-    <div class="field" style="margin-top:10px"><label for="rosterPaste">명단 붙여넣기</label><textarea id="rosterPaste" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="그룹사&#9;사번&#9;성명&#9;본부&#9;팀&#9;직위&#9;직책&#9;리더구분&#9;초기비밀번호" aria-describedby="hRp">${esc(state._rosterText||'')}</textarea><span class="help" id="hRp">머리글이 있으면 열 순서가 달라도 됩니다. 머리글이 없으면 양식 순서(그룹사 · 사번 · 성명 · 본부 · 팀 · 직위 · 직책 · 리더구분 · 초기비밀번호)로 읽습니다.</span></div>
+    <div class="field" style="margin-top:10px"><label for="rosterPaste">명단 붙여넣기</label><textarea id="rosterPaste" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="그룹사&#9;사번&#9;성명&#9;본부/실&#9;팀&#9;직위&#9;직책&#9;리더구분&#9;초기비밀번호" aria-describedby="hRp">${esc(state._rosterText||'')}</textarea><span class="help" id="hRp">머리글이 있으면 열 순서가 달라도 됩니다. 머리글이 없으면 양식 순서(그룹사 · 사번 · 성명 · 본부/실 · 팀 · 직위 · 직책 · 리더구분 · 초기비밀번호)로 읽습니다.</span></div>
     <div class="btns"><button type="button" class="btn sec2" data-act="rosterCheck">검사하기</button></div></details>
     ${pv?`<div class="stack" style="gap:12px" aria-live="polite">
       <p><b>${pv.rows.length}명</b> · ${Object.entries(pv.byCo).map(([c,n])=>`${esc(c)} ${n}명`).join(' · ')}</p>
@@ -1308,12 +1314,12 @@ async function adminRoster(){
       ${pv.noLead.length?`<p class="cap">팀장이 지정되지 않은 팀 ${pv.noLead.length}개: ${pv.noLead.slice(0,8).map(esc).join(', ')}${pv.noLead.length>8?' 외':''}</p>`:''}
       <fieldset class="field" style="border:0;padding:0;margin:0"><legend class="flabel">올리는 방식</legend>
         <label class="row" style="gap:8px"><input type="radio" name="rMode" value="merge" ${state._rMode!=='replace'?'checked':''} data-change="rMode"> 추가 · 수정 (기존 명단은 그대로 두고 같은 사번은 고침)</label>
-        <label class="row" style="gap:8px"><input type="radio" name="rMode" value="replace" ${state._rMode==='replace'?'checked':''} data-change="rMode"> 전체 교체 (올린 명단에 없는 사람은 로그인할 수 없게 됨 · 퇴사자 정리용)</label>
+        <label class="row" style="gap:8px"><input type="radio" name="rMode" value="replace" ${state._rMode==='replace'?'checked':''} data-change="rMode"> 그룹사 명단 교체 (파일에 있는 그룹사의 명단을 이 파일로 바꿈 · 빠진 사람은 로그인할 수 없게 됨 · 퇴사자 정리용)</label>
       </fieldset>
       <div class="btns"><button type="button" class="btn" data-act="rosterUpload" ${pv.errors.length||!pv.rows.length?'disabled':''}>${pv.rows.length}명 올리기</button></div>
     </div>`:''}
   </section>
-  <section class="card pad-lg stack" aria-labelledby="auT">
+  ${isHQ?`<section class="card pad-lg stack" aria-labelledby="auT">
     <div class="sec-h"><h2 class="h2" id="auT" style="font-size:22px">관리자 권한</h2><p class="h3t">인재경영실(HQ)은 그룹 전체, 그룹사 HR(HR)은 담당 그룹사를 봅니다. 팀장 · 본부장은 명단의 리더구분으로 자동 지정됩니다.</p></div>
     <div class="tbl-wrap"><table><thead><tr><th scope="col">성명</th><th scope="col">그룹사</th><th scope="col">사번</th><th scope="col">권한</th><th scope="col">담당 그룹사</th><th scope="col"><span class="skip">삭제</span></th></tr></thead><tbody>
       ${info.auth.length?info.auth.map(u=>`<tr><td>${esc(u.name||'(명단에 없음)')}</td><td>${esc(u.company)}</td><td class="num">${esc(u.empno)}</td><td>${u.role==='HQ'?'인재경영실':'그룹사 HR'}</td><td>${esc(u.role==='HR'?(u.scopeCompany||u.company):'그룹 전체')}</td><td>${u.company===prof().company&&u.empno===prof().empno?'':`<button type="button" class="btn ghost sm" data-act="authDel" data-co="${esc(u.company)}" data-no="${esc(u.empno)}" data-name="${esc(u.name||u.empno)}">삭제</button>`}</td></tr>`).join(''):'<tr><td colspan="6" class="cap">지정된 권한이 없습니다</td></tr>'}
@@ -1327,9 +1333,9 @@ async function adminRoster(){
       </div>
       <div class="row between"><span class="status" id="auStatus" role="status"></span><button class="btn" type="submit">권한 저장</button></div>
     </form>
-  </section>
+  </section>`:''}
   <section class="card pad-lg stack" aria-labelledby="exT">
-    <div class="sec-h"><h2 class="h2" id="exT" style="font-size:22px">데이터 내려받기</h2><p class="h3t">엑셀에서 바로 열리는 CSV 파일로 받습니다. 비밀번호 · 로그인 정보는 내려받을 수 없습니다.</p></div>
+    <div class="sec-h"><h2 class="h2" id="exT" style="font-size:22px">데이터 내려받기</h2><p class="h3t">엑셀에서 바로 열리는 CSV 파일로 받습니다${isHQ?'':` (${esc(state.auth.company)} 범위)`}. 비밀번호 · 로그인 정보는 내려받을 수 없습니다.</p></div>
     <div class="btns" style="flex-wrap:wrap">${exports.map(([k,l])=>`<button type="button" class="btn sec2 sm" data-act="exportCsv" data-t="${k}" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>
   </section>`;
 }
@@ -1355,8 +1361,8 @@ function downloadCsv(rows, filename){
 }
 
 /* ===== 조직(그룹사 · 본부 · 팀) 필터와 집계 ===== */
-const DIV_NONE='본부 미지정';
-const LEVEL_NAME={company:'그룹사',division:'본부',team:'팀'};
+const DIV_NONE='본부/실 미지정';
+const LEVEL_NAME={company:'그룹사',division:'본부/실',team:'팀'};
 function orgLabel(r,level){
   const dv=r.division&&r.division!==DIV_NONE ? r.division : '';
   if(level==='company') return r.company;
@@ -1394,9 +1400,9 @@ function filterBar(d){
   const o=(list,sel)=>list.map(v=>`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(v)}</option>`).join('');
   const canReset = (a.role==='HQ'&&f.co) || (a.role==='HR'&&f.div) || f.team;
   return `<div class="filters" role="group" aria-label="조회 범위">
-    <div class="field"><label for="fCo">그룹사</label><select id="fCo" data-change="fCo" ${a.role!=='HQ'?'disabled aria-describedby="hfCo"':''}>${a.role==='HQ'?'<option value="">그룹 전체</option>':''}${o(cos,f.co)}</select>${a.role!=='HQ'?`<span class="help" id="hfCo">${a.role==='HR'?'담당 그룹사만':'소속 본부만'} 조회할 수 있습니다</span>`:''}</div>
-    <div class="field"><label for="fDiv">본부</label><select id="fDiv" data-change="fDiv" ${f.co&&a.role!=='DIVHEAD'?'':'disabled'}><option value="">${f.co?'본부 전체':'그룹사를 먼저 고르세요'}</option>${o(divs,f.div)}</select></div>
-    <div class="field"><label for="fTeam">팀</label><select id="fTeam" data-change="fTeam" ${f.div?'':'disabled'}><option value="">${f.div?'팀 전체':'본부를 먼저 고르세요'}</option>${o(teams,f.team)}</select></div>
+    <div class="field"><label for="fCo">그룹사</label><select id="fCo" data-change="fCo" ${a.role!=='HQ'?'disabled aria-describedby="hfCo"':''}>${a.role==='HQ'?'<option value="">그룹 전체</option>':''}${o(cos,f.co)}</select>${a.role!=='HQ'?`<span class="help" id="hfCo">${a.role==='HR'?'담당 그룹사만':'소속 본부/실만'} 조회할 수 있습니다</span>`:''}</div>
+    <div class="field"><label for="fDiv">본부/실</label><select id="fDiv" data-change="fDiv" ${f.co&&a.role!=='DIVHEAD'?'':'disabled'}><option value="">${f.co?'본부/실 전체':'그룹사를 먼저 고르세요'}</option>${o(divs,f.div)}</select></div>
+    <div class="field"><label for="fTeam">팀</label><select id="fTeam" data-change="fTeam" ${f.div?'':'disabled'}><option value="">${f.div?'팀 전체':'본부/실을 먼저 고르세요'}</option>${o(teams,f.team)}</select></div>
     ${canReset?'<button type="button" class="btn ghost sm" data-act="fReset">범위 초기화</button>':''}
   </div>`;
 }
@@ -1596,6 +1602,13 @@ function adminYear(d){
   ${rows.map(r=>{const c=CAMPAIGNS[r.campaign-1];const st=statusOf(r.campaign);return `<tr class="${st==='run'?'cur':''}"><td class="num"><b>${two(r.campaign)}</b></td><td>${esc(c.name)}</td><td>${st==='plan'?'<span class="cap">예정</span>':barCell(pct(r.participants,r.target))}</td><td class="r num">${r.surveyN||'—'}</td><td class="r num">${f1(r.q1)}</td><td class="r num">${r.q2==null&&r.surveyN?'<span class="cap">비공개</span>':f1(r.q2)}</td><td class="r num">${f1(r.q3)}</td></tr>`;}).join('')}
   </tbody></table></div>`;
 }
+function adminCompanies(){
+  return `<form class="card pad-lg form" data-form="companies" novalidate aria-labelledby="coT">
+    <div class="sec-h"><h2 class="h2" id="coT" style="font-size:22px">그룹사 목록</h2><p class="h3t">로그인 화면 드롭다운과 명단 검사에 쓰는 정식 이름입니다. 한 줄에 하나씩, 보여줄 순서대로 적습니다.</p></div>
+    <div class="field"><label for="coList">그룹사 이름</label><textarea id="coList" name="list" style="min-height:200px" aria-describedby="hCo eCo">${esc(state.companies.join('\n'))}</textarea><span class="help" id="hCo">명단이 올라가 있는 그룹사는 목록에서 뺄 수 없습니다. 이름을 바꾸려면 새 이름을 추가하고 명단을 새 이름으로 다시 올린 뒤 예전 이름을 지우세요.</span><span class="err" id="eCo" data-err="list"></span></div>
+    <div class="row between"><span class="status" id="coStatus" role="status"></span><button class="btn" type="submit">그룹사 목록 저장</button></div>
+  </form>`;
+}
 function adminSettings(d){
   const st=state.settings; const skips=(state._skips ??= [...(st.skipWeeks||[])]);
   const sch=buildSchedule(state._start||st.startDate, skips);
@@ -1654,7 +1667,8 @@ const ACTIONS={
   rosterCheck(){ const t=$('#rosterPaste').value; state._rosterText=t; state._rosterFile=''; state._rosterPv=parseRoster(t); if(!state._rosterPv) toast('붙여넣은 명단이 없습니다'); render(); },
   async rosterUpload(b){
     const pv=state._rosterPv; if(!pv||pv.errors.length) return; const mode=state._rMode==='replace'?'replace':'merge';
-    const yes=await confirmDlg(mode==='replace'?'명단을 전체 교체할까요?':'명단을 올릴까요?', mode==='replace'?`${pv.rows.length}명으로 교체합니다. 이 명단에 없는 사람은 로그인할 수 없게 됩니다(기록은 남습니다).`:`${pv.rows.length}명을 추가하거나 고칩니다.`, '올리기');
+    const cos=Object.keys(pv.byCo).join(', ');
+    const yes=await confirmDlg(mode==='replace'?'그룹사 명단을 교체할까요?':'명단을 올릴까요?', mode==='replace'?`${cos} 명단을 이 파일의 ${pv.rows.length}명으로 바꿉니다. 파일에 없는 ${cos} 직원은 로그인할 수 없게 됩니다(기록은 남습니다).`:`${pv.rows.length}명을 추가하거나 고칩니다.`, '올리기');
     if(!yes) return; b.disabled=true; b.textContent='올리는 중…';
     try{ const r=await api.call('rosterUpload',{mode,rows:pv.rows}); state._rosterPv=null; state._rosterText=''; state._rosterFile=''; toast(`추가 ${r.inserted}명 · 수정 ${r.updated}명${r.removed?` · 제외 ${r.removed}명`:''} · 전체 ${r.total}명`);
       const bt=await api.bootstrap(); state.companies=bt.companies; render(); }
@@ -1773,6 +1787,13 @@ const FORMS={
     try{ const r=await api.call('changePassword',{current:cur,next:nx}); state._curPw=null; setSession(r); toast('비밀번호를 바꿨습니다'); render(true); }
     catch(e){ setErr(f, f.elements.current&&/현재/.test(e.message)?'current':'next', e.message); btn.disabled=false; btn.textContent='비밀번호 변경'; }
   },
+  async companies(f){
+    const list=[...new Set(f.elements.list.value.split('\n').map(x=>x.trim()).filter(Boolean))];
+    if(!setErr(f,'list', list.length?'':'그룹사를 1개 이상 적어 주세요')){ f.elements.list.focus(); return; }
+    const st=$('#coStatus'); st.className='status'; st.textContent='저장하는 중…';
+    try{ const r=await api.call('saveCompanies',{companies:list}); state.companies=r.companies; toast('그룹사 목록을 저장했습니다'); render(); }
+    catch(e){ st.className='status bad'; st.textContent=e.message; }
+  },
   async authSet(f){
     const emp=f.elements.empno.value.trim(); if(!setErr(f,'empno', emp?'':'사번을 입력하세요')){ f.elements.empno.focus(); return; }
     const st=$('#auStatus'); st.className='status'; st.textContent='저장하는 중…';
@@ -1839,9 +1860,9 @@ const THEME_UI={
 function renderFooter(){ $('#contactLine').textContent = `문의 · 비밀번호는 소속 그룹사 HR, 앱 오류는 ${CONFIG.CONTACT||'인재경영실'}`; }
 function privacyHtml(){
   return `<dl>
-    <dt>수집 항목</dt><dd>인재경영실이 등록한 명단(그룹사, 사번, 성명, 본부, 팀, 직위, 직책, 리더 구분)과 앱에서 입력한 내용(실천 체크, 결과물, 동료 추천, 리더 오프닝, Survey 응답, 접속일)</dd>
+    <dt>수집 항목</dt><dd>인재경영실이 등록한 명단(그룹사, 사번, 성명, 본부/실, 팀, 직위, 직책, 리더 구분)과 앱에서 입력한 내용(실천 체크, 결과물, 동료 추천, 리더 오프닝, Survey 응답, 접속일)</dd>
     <dt>이용 목적</dt><dd>'27 MVC 가치체계 내재화 캠페인 운영, 참여 현황 집계, 우수 사례 공유</dd>
-    <dt>열람 범위</dt><dd>인재경영실(그룹 전체), 그룹사 HR(담당 그룹사), 본부장·팀장(자기 본부·팀 집계)</dd>
+    <dt>열람 범위</dt><dd>인재경영실(그룹 전체), 그룹사 HR(담당 그룹사), 본부장·팀장(자기 본부/실·팀 집계)</dd>
     <dt>공개되는 것</dt><dd>결과물은 '공개'를 고른 경우에만 사례 화면에 이름과 함께 보입니다. 동료 추천은 추천받은 사람의 이름과 추천 이유가 사례 화면에 보입니다.</dd>
     <dt>Survey</dt><dd>응답은 이름 · 사번과 분리해 저장합니다. 응답이 3명 미만인 팀은 리더 관련 점수를 보여주지 않습니다.</dd>
     <dt>보관 기간</dt><dd>${esc(CONFIG.KEEP||'[보관 기간 확정 후 기입]')}. 기간이 지나면 지체 없이 파기합니다.</dd>
