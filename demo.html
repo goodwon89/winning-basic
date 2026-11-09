@@ -1251,7 +1251,13 @@ function adminAccounts(){
 }
 /* ===================== 관리자: 명단 · 권한 · 내려받기 (인재경영실) ===================== */
 const ROSTER_COLS=[['company','그룹사'],['empno','사번'],['name','성명'],['division','본부/실'],['team','팀'],['position','직위'],['duty','직책'],['leader','리더구분'],['initPw','초기비밀번호']];
-const LEADER_OK=new Set(['','팀장','본부장','본부장/팀장','팀장/본부장','Y','H','HY','본부장,팀장','본부장·팀장']);
+// 리더구분: 양식 표기(본부장(실장) · 팀장 · 본부장/팀장(겸직))를 서버가 읽는 표준값(본부장 · 팀장 · 본부장/팀장)으로 바꿉니다
+const LEADER_LABELS='팀장 · 본부장(실장) · 본부장/팀장(겸직)';
+function normLeader(v){ const s=String(v||'').replace(/\s/g,'').toUpperCase(); if(!s) return '';
+  if(/겸직/.test(s)||['본부장/팀장','팀장/본부장','HY','YH','본부장,팀장','본부장·팀장','실장/팀장'].includes(s)) return '본부장/팀장';
+  if(['본부장','실장','본부장(실장)','실장(본부장)','H'].includes(s)) return '본부장';
+  if(['팀장','Y'].includes(s)) return '팀장';
+  return null; }
 function rosterKey(h){ h=String(h||'').replace(/\s/g,'');
   if(/리더/.test(h)) return 'leader'; if(/비밀번호/.test(h)) return 'initPw'; if(/그룹사|계열사|회사/.test(h)) return 'company'; if(/사번/.test(h)) return 'empno';
   if(/성명|이름/.test(h)) return 'name'; if(/직위/.test(h)) return 'position'; if(/직책/.test(h)) return 'duty'; if(/^본부/.test(h)) return 'division'; if(/^팀/.test(h)) return 'team'; return null; }
@@ -1271,7 +1277,8 @@ function parseRoster(text){
     if(!o.company||!o.empno||!o.name){ errors.push(`${ln}행: 그룹사 · 사번 · 성명 중 빈 칸이 있습니다`); return; }
     if(/예시/.test(l)||(o.name==='홍길동'&&o.empno==='20210123')||(o.name==='김본부'&&o.empno==='20180045')) warns.push(`${ln}행: 양식의 예시 행으로 보입니다 (${o.name}). 지우고 올리세요`);
     const k=o.company+'|'+o.empno; if(seen.has(k)) errors.push(`${ln}행: ${o.company} 사번 ${o.empno}가 ${seen.get(k)}행과 겹칩니다`); else seen.set(k,ln);
-    if(!LEADER_OK.has(o.leader.replace(/\s/g,''))) warns.push(`${ln}행: 리더구분 '${o.leader}'은(는) 팀장 · 본부장 · 본부장/팀장 중 하나로 적어 주세요`);
+    if(!o.position||!o.duty) errors.push(`${ln}행: ${o.name}님의 ${!o.position&&!o.duty?'직위 · 직책이':!o.position?'직위가':'직책이'} 비어 있습니다${o.duty?'':" (팀원은 직책에 '팀원'으로 적습니다)"}`);
+    const lv=normLeader(o.leader); if(lv===null) errors.push(`${ln}행: 리더구분 '${o.leader}'은(는) ${LEADER_LABELS} 중 하나로 고르거나 비워 두세요`); else o.leader=lv;
     rows.push(o);
   });
   const leaders={}; rows.forEach(r=>{ const lc=r.leader.replace(/\s/g,''); if(/팀장|Y/.test(lc)&&r.team){ const k=`${r.company} · ${r.division||'본부/실 미지정'} · ${r.team}`; leaders[k]=(leaders[k]||0)+1; } });
@@ -1303,7 +1310,7 @@ async function adminRoster(){
       <input type="file" id="rosterFile" accept=".xlsx,.xls,.csv" data-change="rosterFile" class="file-in" aria-describedby="hRf">
       <label class="btn" for="rosterFile" style="cursor:pointer">엑셀 파일 올리기</label>
     </div>
-    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. ${isHQ?'여러 그룹사 파일은 한 파일로 합치거나 파일마다 차례로 올리면 됩니다.':'담당 그룹사 명단만 올릴 수 있습니다.'} 그룹사 이름은 ${state.companies.map(esc).join(' · ')} 중 하나로 적습니다.${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
+    <p class="help" id="hRf">양식의 '명단' 시트를 읽습니다. ${isHQ?'여러 그룹사 파일은 한 파일로 합치거나 파일마다 차례로 올리면 됩니다.':'담당 그룹사 명단만 올릴 수 있습니다.'} 그룹사 이름은 ${state.companies.map(esc).join(' · ')} 중 하나로 적습니다. <b>필수: 그룹사 · 사번 · 성명 · 직위 · 직책</b> · 리더구분: ${LEADER_LABELS} (해당 없으면 비움).${state._rosterFile?` · 읽은 파일: <b>${esc(state._rosterFile)}</b>`:''}</p>
     <details${state._rosterText&&!state._rosterFile?' open':''}><summary class="cap" style="cursor:pointer">또는 엑셀에서 복사해 붙여넣기</summary>
     <div class="field" style="margin-top:10px"><label for="rosterPaste">명단 붙여넣기</label><textarea id="rosterPaste" style="min-height:160px;font-family:ui-monospace,monospace;font-size:13px" placeholder="그룹사&#9;사번&#9;성명&#9;본부/실&#9;팀&#9;직위&#9;직책&#9;리더구분&#9;초기비밀번호" aria-describedby="hRp">${esc(state._rosterText||'')}</textarea><span class="help" id="hRp">머리글이 있으면 열 순서가 달라도 됩니다. 머리글이 없으면 양식 순서(그룹사 · 사번 · 성명 · 본부/실 · 팀 · 직위 · 직책 · 리더구분 · 초기비밀번호)로 읽습니다.</span></div>
     <div class="btns"><button type="button" class="btn sec2" data-act="rosterCheck">검사하기</button></div></details>
