@@ -1348,6 +1348,7 @@ async function adminRoster(){
   </section>`:''}
   <section class="card pad-lg stack" aria-labelledby="exT">
     <div class="sec-h"><h2 class="h2" id="exT" style="font-size:22px">데이터 내려받기</h2><p class="h3t">엑셀에서 바로 열리는 CSV 파일로 받습니다${isHQ?'':` (${esc(state.auth.company)} 범위)`}. 비밀번호 · 로그인 정보는 내려받을 수 없습니다.</p></div>
+    <div class="row" style="gap:10px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="backupAll">전체 백업 받기 (엑셀 1개)</button><span class="cap">${lastBackupText()} · 위 항목을 시트별로 한 파일에 담습니다. 캠페인이 끝날 때마다 받아 사내 드라이브에 보관하세요.</span></div>
     <div class="btns" style="flex-wrap:wrap">${exports.map(([k,l])=>`<button type="button" class="btn sec2 sm" data-act="exportCsv" data-t="${k}" data-l="${esc(l)}">${esc(l)}</button>`).join('')}</div>
   </section>`;
 }
@@ -1364,6 +1365,27 @@ async function readRosterFile(file){
   const name=wb.SheetNames.find(n=>n.trim()==='명단') || wb.SheetNames.find(n=>{ const r=X.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''}); return r.length&&r[0].some(c=>/사번/.test(c)); }) || wb.SheetNames[0];
   const rows=X.utils.sheet_to_json(wb.Sheets[name],{header:1,raw:false,defval:'',blankrows:false});
   return rows.map(r=>r.map(c=>String(c).replace(/[\t\r\n]+/g,' ')).join('\t')).join('\n');
+}
+/* 전체 백업: 내려받기 항목을 시트별로 엑셀 파일 1개에 담습니다. 마지막 백업일은 이 브라우저에 기억합니다. */
+const BACKUP_TABLES=[['roster','명단'],['practice','실천 체크'],['submissions','결과물'],['recommends','동료 추천'],['survey','Survey 응답'],['openings','리더 오프닝'],['visits','접속 기록'],['errors','오류 기록']];
+function lastBackupText(){ const d=store.get('lastBackup'); return d?`마지막 백업 ${esc(d)} (이 PC)`:'아직 이 PC에서 받은 백업이 없습니다'; }
+function backupDue(){ // 끝난 캠페인 Survey 마감일 이후 백업을 받지 않았으면 true
+  const t=today(), last=store.get('lastBackup'); const ended=state.schedule.filter(s=>addD(s.surveyTo,1)<=t); if(!ended.length) return null;
+  const s=ended[ended.length-1]; return (!last||last<fmt(addD(s.surveyTo,1))) ? s : null; }
+async function backupAll(btn){
+  const isHQ=state.auth.role==='HQ'; btn.disabled=true; const label=btn.textContent; btn.textContent='모으는 중…';
+  try{
+    const X=await loadXlsx(); const wb=X.utils.book_new(); let errN=0, total=0;
+    for(const [t,l] of BACKUP_TABLES){ if(t==='errors'&&!isHQ) continue;
+      const r=await api.call('export',{table:t}); const rows=(r.rows||[]).map(o=>{ const x={}; Object.entries(o).forEach(([k,v])=>x[k]=v==null?'':typeof v==='object'?JSON.stringify(v):v); return x; });
+      if(t==='errors') errN=rows.length; total+=rows.length;
+      X.utils.book_append_sheet(wb, rows.length?X.utils.json_to_sheet(rows):X.utils.aoa_to_sheet([['(데이터 없음)']]), l); }
+    const info=X.utils.aoa_to_sheet([['Winning Basic! 전체 백업'],['받은 시각',new Date().toLocaleString('ko-KR')],['범위',isHQ?'그룹 전체':state.auth.company],['비고','비밀번호 · 로그인 정보는 포함하지 않습니다']]);
+    X.utils.book_append_sheet(wb, info, '안내'); wb.SheetNames.unshift(wb.SheetNames.pop());
+    X.writeFile(wb, `WinningBasic_backup_${fmt(new Date()).replace(/-/g,'')}.xlsx`);
+    store.set('lastBackup', fmt(new Date()));
+    toast(isHQ?`백업을 받았습니다 (${total}행)${errN?` · 오류 기록 ${errN}건이 있어요. '오류 기록' 시트를 확인하세요`:' · 오류 기록 없음'}`:`백업을 받았습니다 (${total}행)`); render();
+  }catch(e){ toast(e.message); btn.disabled=false; btn.textContent=label; }
 }
 function downloadCsv(rows, filename){
   const cols=[...new Set(rows.flatMap(r=>Object.keys(r)))];
@@ -1477,7 +1499,9 @@ function adminRun(d,no,n){
   const hqBar = state.auth.role==='HQ' ? `<div class="row between well"><span class="muted">${stage}단계 「${esc(STAGES[stage-1].title)}」 진행을 마쳤으면 완료로 표시하세요.</span><button class="btn sm ${opDone?'line':''}" data-act="opsDone" data-k="${stage}" data-done="${opDone?'0':'1'}">${opDone?'완료 취소':'완료로 표시'}</button></div>`:'';
   const needOpen = (prof()?.leader||'').includes('Y') && !d.myOpening && stage!==2 && t>=s.stages[1].from;
   const openBar = needOpen ? `<div class="row between well" role="status"><span><b>우리 팀 운영 방향이 아직 등록되지 않았습니다.</b> <span class="muted">팀 약속과 주기 · 기한을 정해 등록하세요.</span></span><button type="button" class="btn sm" data-act="adminStage" data-k="2">지금 등록</button></div>` : '';
-  return head+openBar+filterBar(d)+stages+scopeLine+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
+  const bd = (state.auth.role==='HQ'||state.auth.role==='HR') ? backupDue() : null;
+  const backupBar = bd ? `<div class="row between well" role="status"><span><b>캠페인 ${two(bd.no)} Survey가 끝났습니다.</b> <span class="muted">전체 백업을 받아 사내 드라이브에 보관하세요${state.auth.role==='HQ'?' (오류 기록도 함께 확인됩니다)':''}.</span></span><button type="button" class="btn sm" data-act="backupAll">전체 백업 받기</button></div>` : '';
+  return head+openBar+backupBar+filterBar(d)+stages+scopeLine+kpis+`<section class="card pad-lg panel" aria-label="${esc(STAGES[stage-1].title)} 도구">${panel}${hqBar}</section>`;
 }
 function appUrl(){ return CONFIG.APP_URL || location.href.split('#')[0]; }
 function copyBlock(id,label,text,rows){ return `<div class="copybox"><label for="${id}" class="flabel">${esc(label)}</label><textarea id="${id}" readonly ${rows?`style="min-height:${rows}px"`:''}>${esc(text)}</textarea><div class="btns"><button class="btn sm" data-act="copy" data-target="${id}">문구 복사</button></div></div>`; }
@@ -1691,6 +1715,7 @@ const ACTIONS={
     if(!await confirmDlg('권한을 삭제할까요?',`${b.dataset.name}님의 관리자 권한을 삭제합니다. 팀장 · 본부장이면 그 범위는 계속 볼 수 있습니다.`,'삭제')) return;
     try{ await api.call('authSet',{company:b.dataset.co,empno:b.dataset.no,role:''}); toast('권한을 삭제했습니다'); render(); }catch(e){ toast(e.message); }
   },
+  backupAll(b){ backupAll(b); },
   async exportCsv(b){
     b.disabled=true; const l=b.textContent; b.textContent='준비 중…';
     try{ const r=await api.call('export',{table:b.dataset.t}); if(!r.rows.length) toast('내려받을 데이터가 없습니다'); else downloadCsv(r.rows, `WinningBasic_${b.dataset.t}_${fmt(new Date())}.csv`); }
