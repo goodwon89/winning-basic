@@ -1190,6 +1190,9 @@ async function viewCases(){
 function viewGuide(){
   return `<div class="stack" style="gap:28px">
     <div class="sec-h"><span class="label">운영 안내</span><h1 class="h1">환경 조성을 통한 인지를 넘어, 일상적 행동으로 작동</h1><p class="h3t">'27년 MVC 가치체계 내재화 핵심 메시지</p></div>
+    <section class="card stack" style="gap:14px" aria-labelledby="gdT"><div class="sec-h"><h2 class="h2" id="gdT" style="font-size:22px">운영 가이드 내려받기</h2><p class="h3t">휴대폰 · PC 어디서나 PDF로 열립니다.</p></div>
+      <div class="grid g3" style="gap:12px">${[['Member','구성원 가이드','그룹 전 구성원 · 첫 로그인부터 Survey까지'],['Leader','리더 가이드','팀장 · 본부장(실장) · 오프닝과 우리 팀 현황'],['GroupHR','그룹사 HR 가이드','각 그룹사 HR 담당자 · 명단 · 계정 · 운영 루틴']].map(([k,t,d])=>`<a class="card" style="text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:6px;padding:18px" href="guides/WinningBasic_Guide_${k}.pdf" download><b style="font-size:16px">${t} <span aria-hidden="true">↓</span></b><span class="cap">${d}</span><span class="cap" style="color:var(--accent-strong)">PDF 내려받기</span></a>`).join('')}</div>
+    </section>
     <div class="grid g2">
       <article class="card stack" style="gap:10px"><span class="label">왜 1</span><h3 style="font-size:20px">가치체계 안착에는 구체적인 행동의 언어가 필요합니다</h3><p class="muted">9개 Winning Rules는 방향을 말해주지만, 구성원이 매일 일상의 할 일로 옮기려면 행동 단위의 약속이 필요합니다.</p></article>
       <article class="card stack" style="gap:10px"><span class="label">왜 2</span><h3 style="font-size:20px">좋은 기업문화에는 기본기 · 바닥이 탄탄해야 합니다</h3><p class="muted">AI 활용으로 생산성을 높일수록, 사람 사이의 기본과 원칙, 비즈니스 매너가 회사 경쟁력의 차이가 됩니다.</p></article>
