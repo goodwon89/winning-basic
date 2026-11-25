@@ -796,6 +796,20 @@ const mock = (()=>{
       const m={roster:roster.map(({initPw,...r})=>r),practice:db.practice,submissions:db.submissions,recommends:db.recommends,survey:db.surveyResp,openings:db.openings,visits:[],errors:[]};
       if(!(b.table in m)) throw apiError('내려받을 수 없는 항목입니다'); return {rows:m[b.table]}; },
     logError(b){ session(b.token); return {saved:true}; },
+    manageList(b){ const a=session(b.token); if(a.role!=='HQ'&&a.role!=='HR') throw apiError('인재경영실 또는 그룹사 HR 권한이 필요합니다');
+      const no=Number(b.campaign), f=scopeFn(a), byNo=r=>r.campaign===no&&f(r); let k=0;
+      db.submissions.forEach(x=>{ if(!x.id) x.id='d'+(++k)+Math.random().toString(36).slice(2,7); }); db.recommends.forEach((x,i)=>{ if(!x.id) x.id=1000+i; });
+      return {submissions:db.submissions.filter(byNo).slice().reverse(),recommends:db.recommends.filter(byNo).slice().reverse(),
+        survey:{resp:db.surveyResp.filter(byNo).length,part:db.surveyPart.filter(byNo).length}}; },
+    manageItem(b){ const a=session(b.token); if(a.role!=='HQ'&&a.role!=='HR') throw apiError('인재경영실 또는 그룹사 HR 권한이 필요합니다');
+      const f=scopeFn(a), list=b.kind==='submission'?db.submissions:db.recommends, i=list.findIndex(x=>String(x.id)===String(b.id)&&f(x));
+      if(i<0) throw apiError('항목을 찾을 수 없거나 관리 범위 밖입니다');
+      if(b.op==='delete') list.splice(i,1); else if(b.kind==='submission') list[i].public=b.op==='show'; return {done:1}; },
+    surveyReset(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); if(b.confirm!=='초기화') throw apiError('확인 문구가 맞지 않습니다');
+      const no=Number(b.campaign), r=db.surveyResp.filter(x=>x.campaign===no).length, p=db.surveyPart.filter(x=>x.campaign===no).length;
+      db.surveyResp=db.surveyResp.filter(x=>x.campaign!==no); db.surveyPart=db.surveyPart.filter(x=>x.campaign!==no); return {resp:r,part:p}; },
+    resetActivity(b){ const a=session(b.token); if(a.role!=='HQ') throw apiError('인재경영실 권한이 필요합니다'); if(b.confirm!=='전체 초기화') throw apiError('확인 문구가 맞지 않습니다');
+      const r={}; ['practice','submissions','recommends','surveyPart','surveyResp','openings','ops'].forEach(k=>{ r[k]=(db[k]||[]).length; db[k]=[]; }); return r; },
     resetPassword(b){ const a=session(b.token); const t=person(b.company||a.scopeCompany,b.empno);
       if(!t) throw apiError('해당 그룹사 명단에 없는 사번입니다');
       if(!(a.role==='HQ'||(a.role==='HR'&&t.company===a.scopeCompany))) throw apiError('이 직원의 비밀번호를 초기화할 권한이 없습니다');
@@ -1227,12 +1241,13 @@ async function viewAdmin(){
   const data = normOrg(await api.call('adminData',{campaign:no}));
   state.adminData=data;
   const a=state.auth; const scope = a.role==='HQ'?'그룹 전체':a.role==='HR'?a.company:a.role==='DIVHEAD'?`${a.company} ${a.division}`:`${a.company} ${a.team}`;
-  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role==='HQ'||a.role==='HR') tabs.push(['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['roster','명단 · 권한'],['settings','설정']); else if(a.role==='HR') tabs.push(['roster','명단 관리']);
+  const tabs=[['run','4주 운영'],['year','연간 현황']]; if(a.role==='HQ'||a.role==='HR') tabs.push(['manage','사례 · Survey 관리'],['accounts','비밀번호 초기화']); if(a.role==='HQ') tabs.push(['roster','명단 · 권한'],['settings','설정']); else if(a.role==='HR') tabs.push(['roster','명단 관리']);
   if(!tabs.some(t=>t[0]===state.adminTab)) state.adminTab='run';
   let body='';
   if(state.adminTab==='year') body=adminYear(data);
-  else if(state.adminTab==='settings') body=adminCompanies()+adminSettings(data);
+  else if(state.adminTab==='settings') body=adminCompanies()+adminSettings(data)+adminDanger();
   else if(state.adminTab==='accounts') body=adminAccounts();
+  else if(state.adminTab==='manage') body=await adminManage(no);
   else if(state.adminTab==='roster') body=await adminRoster();
   else body=adminRun(data,no,n);
   return `<div class="stack" style="gap:24px">
@@ -1241,6 +1256,48 @@ async function viewAdmin(){
     <div class="tabs" role="tablist" aria-label="운영 메뉴">${tabs.map(([k,l])=>`<button role="tab" id="tab-${k}" aria-selected="${state.adminTab===k}" aria-controls="adminPanel" data-act="adminTab" data-k="${k}">${l}</button>`).join('')}</div>
     <div id="adminPanel" role="tabpanel" aria-labelledby="tab-${state.adminTab}" class="stack" style="gap:24px">${body}</div>
   </div>`;
+}
+/* 사례 · Survey 관리: 부적절한 결과물은 비공개 · 삭제, 동료 추천 삭제, (인재경영실) 캠페인 Survey 초기화 */
+async function adminManage(no){
+  const a=state.auth, isHQ=a.role==='HQ'; let d;
+  try{ d=await api.call('manageList',{campaign:no}); }
+  catch(e){ return `<section class="card pad-lg stack"><h2 class="h2" style="font-size:22px">사례 · Survey 관리</h2><p class="muted">${/알 수 없는 요청/.test(e.message)?'관리 기능이 아직 서버에 설치되지 않았습니다. 인재경영실이 Supabase에서 admin_manage.sql을 실행하면 바로 쓸 수 있습니다.':esc(e.message)}</p></section>`; }
+  const camp=CAMPAIGNS.find(x=>x.no===no);
+  const sel=`<div class="field" style="max-width:420px"><label for="mgNo">캠페인 선택</label><select id="mgNo" data-change="adminNo">${CAMPAIGNS.map(x=>`<option value="${x.no}"${x.no===no?' selected':''}>${two(x.no)} ${esc(x.name)}${statusOf(x.no)==='run'?' (진행 중)':''}</option>`).join('')}</select></div>`;
+  const fieldsHtml=f=>{ let o={}; try{ o=JSON.parse(f||'{}'); }catch(e){} return Object.entries(o).map(([k,v])=>`<p style="margin:0"><span class="cap">${esc(k)}</span><br>${esc(v)}</p>`).join(''); };
+  const subs=d.submissions.map(x=>`<div class="card stack" style="gap:8px;padding:16px">
+      <div class="row between" style="gap:8px;flex-wrap:wrap"><span><b>${esc(x.name)}</b> <span class="cap">${esc(x.company)} · ${esc(x.team||'팀 미지정')} · ${esc(x.ts||'')}</span></span>
+        <span class="chip ${x.public?'ok':''}">${x.public?'사례 게시판 공개':'비공개'}</span></div>
+      ${fieldsHtml(x.fields)}${x.link?`<p class="cap" style="margin:0;word-break:break-all">링크 · ${esc(x.link)}</p>`:''}
+      <div class="btns"><button type="button" class="btn sec2 sm" data-act="manageItem" data-kind="submission" data-id="${esc(x.id)}" data-op="${x.public?'hide':'show'}">${x.public?'공개 끄기':'다시 공개'}</button>
+        <button type="button" class="btn line sm" data-act="manageItem" data-kind="submission" data-id="${esc(x.id)}" data-op="delete">삭제</button></div></div>`).join('')
+    || `<p class="muted">이 캠페인에 제출된 결과물이 없습니다.</p>`;
+  const recs=d.recommends.map(x=>`<div class="card row between" style="gap:12px;padding:14px 16px;flex-wrap:wrap">
+      <span style="flex:1;min-width:220px"><b>${esc(x.name)}</b> <span class="cap">${esc(x.company)} · ${esc(x.team||'')}</span> → <b>${esc(x.targetName)}</b> <span class="cap">${esc(x.targetCompany)} · ${esc(x.targetTeam||'')} · ${esc(x.ts||'')}</span><br>${esc(x.reason)}</span>
+      <button type="button" class="btn line sm" data-act="manageItem" data-kind="recommend" data-id="${esc(x.id)}" data-op="delete">삭제</button></div>`).join('')
+    || `<p class="muted">이 캠페인에 동료 추천이 없습니다.</p>`;
+  const sv=d.survey||{resp:0,part:0};
+  return `<section class="card pad-lg stack" aria-labelledby="mgT">
+      <div class="sec-h"><h2 class="h2" id="mgT" style="font-size:22px">사례 · Survey 관리</h2><p class="h3t">부적절한 글은 공개를 끄거나 지웁니다${isHQ?'':` (${esc(a.company)} 범위)`}. 지운 글은 되돌릴 수 없습니다.</p></div>
+      ${sel}
+    </section>
+    <section class="stack" style="gap:12px" aria-labelledby="mgS"><h3 id="mgS" style="margin:0;font-size:18px">결과물 ${d.submissions.length}건 <span class="cap">공개를 끄면 사례 게시판에서만 사라지고, 참여 기록(참여율)은 그대로 남습니다</span></h3>${subs}</section>
+    <section class="stack" style="gap:12px" aria-labelledby="mgR"><h3 id="mgR" style="margin:0;font-size:18px">동료 추천 ${d.recommends.length}건</h3>${recs}</section>
+    <section class="card pad-lg stack" aria-labelledby="mgV"><h3 id="mgV" style="margin:0;font-size:18px">캠페인 ${two(no)} Survey · 응답 ${sv.resp}건</h3>
+      <p class="muted" style="font-size:14px">Survey 응답은 이름 · 사번과 분리해 저장해서 <b>한 사람의 응답만 골라 지우거나 고칠 수 없습니다.</b> 시험 응답을 지우려면 이 캠페인의 Survey를 통째로 초기화합니다. 초기화하면 응답과 참여 표시가 모두 지워지고, 기간 안이면 다시 응답할 수 있습니다.</p>
+      ${isHQ?`<form class="row" data-form="surveyReset" novalidate style="gap:8px;flex-wrap:wrap;align-items:flex-end"><input type="hidden" name="campaign" value="${no}">
+        <div class="field" style="min-width:220px"><label for="svRc">확인을 위해 <b>초기화</b>라고 입력</label><input id="svRc" name="confirm" autocomplete="off"></div>
+        <button type="submit" class="btn line">캠페인 ${two(no)} Survey 초기화</button></form>`:`<p class="cap">Survey 초기화는 인재경영실만 할 수 있습니다.</p>`}
+    </section>`;
+}
+function adminDanger(){
+  return `<section class="card pad-lg stack" aria-labelledby="dzT" style="border-color:var(--bad)">
+    <div class="sec-h"><h2 class="h2" id="dzT" style="font-size:22px">시험 데이터 전체 초기화</h2><p class="h3t">오픈 전에 시험으로 쌓인 활동 기록을 한 번에 지웁니다.</p></div>
+    <p class="muted" style="font-size:14px"><b>지우는 것</b> · 실천 체크 · 결과물 · 동료 추천 · Survey 응답 · 리더 오프닝 · 단계 완료 표시 · 접속 기록 · 오류 기록<br><b>남기는 것</b> · 명단 · 권한 · 설정 · 각자 바꾼 비밀번호<br>자동 백업을 켜 두었다면 지우기 직전에 한 번 백업한 뒤 지웁니다. 운영 중에는 쓰지 마세요.</p>
+    <form class="row" data-form="resetActivity" novalidate style="gap:8px;flex-wrap:wrap;align-items:flex-end">
+      <div class="field" style="min-width:240px"><label for="raC">확인을 위해 <b>전체 초기화</b>라고 입력</label><input id="raC" name="confirm" autocomplete="off"></div>
+      <button type="submit" class="btn line">시험 데이터 전체 초기화</button></form>
+  </section>`;
 }
 function adminAccounts(){
   const a=state.auth; const cos = a.role==='HQ' ? state.companies : [a.company];
@@ -1722,6 +1779,13 @@ const ACTIONS={
     catch(e){ toast(e.message); } finally{ b.disabled=false; b.textContent=l; }
   },
   adminStage(b){ state.adminStage=Number(b.dataset.k); render(); },
+  async manageItem(b){
+    const op=b.dataset.op, kind=b.dataset.kind;
+    if(op==='delete' && !(await confirmDlg(kind==='submission'?'결과물을 삭제할까요?':'동료 추천을 삭제할까요?','삭제하면 되돌릴 수 없습니다. 작성자의 참여 기록에서도 빠집니다.','삭제'))) return;
+    b.disabled=true;
+    try{ await api.call('manageItem',{kind,id:b.dataset.id,op}); toast(op==='delete'?'삭제했습니다':op==='hide'?'사례 게시판 공개를 껐습니다':'다시 공개했습니다'); render(); }
+    catch(e){ toast(e.message); b.disabled=false; }
+  },
   async opsDone(b){
     const k=Number(b.dataset.k), done=b.dataset.done==='1';
     const memo=((state.adminData.ops||[]).find(o=>Number(o.campaign)===state.adminNo&&Number(o.stage)===k)||{}).memo||'';
@@ -1837,6 +1901,20 @@ const FORMS={
     const st=$('#auStatus'); st.className='status'; st.textContent='저장하는 중…';
     try{ await api.call('authSet',{company:f.elements.company.value,empno:emp,role:f.elements.role.value,scopeCompany:f.elements.role.value==='HR'?f.elements.scope.value:''}); toast('권한을 저장했습니다'); render(); }
     catch(e){ st.className='status bad'; st.textContent=e.message; }
+  },
+  async surveyReset(f){
+    const v=f.elements.confirm.value.trim(), no=Number(f.elements.campaign.value);
+    if(!setErr(f,'confirm', v==='초기화'?'':"'초기화'라고 정확히 입력하세요")){ f.elements.confirm.focus(); return; }
+    if(!(await confirmDlg(`캠페인 ${two(no)} Survey를 초기화할까요?`,'이 캠페인의 Survey 응답과 참여 표시가 모두 지워집니다. 되돌릴 수 없습니다.','초기화'))) return;
+    try{ const r=await api.call('surveyReset',{campaign:no,confirm:v}); toast(`Survey 응답 ${r.resp}건을 지웠습니다`); render(); }
+    catch(e){ toast(e.message); }
+  },
+  async resetActivity(f){
+    const v=f.elements.confirm.value.trim();
+    if(!setErr(f,'confirm', v==='전체 초기화'?'':"'전체 초기화'라고 정확히 입력하세요")){ f.elements.confirm.focus(); return; }
+    if(!(await confirmDlg('시험 데이터를 모두 지울까요?','실천 체크 · 결과물 · 추천 · Survey · 오프닝 · 접속 · 오류 기록이 모두 지워집니다. 명단 · 권한 · 비밀번호는 남습니다. 되돌릴 수 없습니다.','전체 초기화'))) return;
+    try{ const r=await api.call('resetActivity',{confirm:v}); const n=Object.values(r).reduce((x,y)=>x+Number(y||0),0); toast(`시험 데이터 ${n}건을 지웠습니다`); f.elements.confirm.value=''; render(); }
+    catch(e){ toast(e.message); }
   },
   async resetPw(f){
     const emp=f.elements.empno.value.trim(); if(!setErr(f,'empno', emp?'':'사번을 입력하세요')){ f.elements.empno.focus(); return; }
