@@ -232,7 +232,8 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .check{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer}
 .check:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
 .check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent-strong);flex-shrink:0}
-.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.scale{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.scale-ends{display:none;justify-content:space-between;font-size:12px;color:var(--text-2);margin-top:4px}
 .scale label{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);cursor:pointer;text-align:center;font-size:12px;color:var(--text-2);line-height:1.3}
 .scale label b{font-size:18px;color:var(--ink)}
 .scale input{position:absolute;opacity:0;width:1px;height:1px}
@@ -333,6 +334,7 @@ button[aria-busy="true"]{cursor:progress}
   .proc,.stages{grid-template-columns:1fr}
   .sec{margin-top:56px}
   .scale label span{display:none}
+  .scale-ends{display:flex}
   .brand span{display:none}
   .now .slogan{font-size:23px}
 }
@@ -513,7 +515,7 @@ const ROLE_GUIDE = [
   ['구성원','캠페인 주간 해당 Rule 적극 실천, 동료의 좋은 사례 발굴 / 추천, Survey 적극 참여']
 ];
 const SURVEY = {
-  scale:['전혀 그렇지 않다','그렇지 않다','보통이다','그렇다','매우 그렇다'],
+  scale:['전혀 그렇지 않다','그렇지 않다','약간 그렇지 않다','약간 그렇다','그렇다','매우 그렇다'],   // 6점 척도(중간값 없음)
   q1:'이번 캠페인 기간 동안 나는 핵심 행동을 실천했다.',
   q2:'나의 직속 리더는 이번 캠페인의 핵심 행동을 솔선수범했다.',
   q3:'이번 캠페인은 내가 핵심 행동을 실천하는 데 도움이 되었다.'
@@ -679,7 +681,7 @@ const mock = (()=>{
       if(rnd()<sr){ const f=pick(SAMPLE[no]); const fields={}; c.submit.forEach((l,i)=>fields[l]=f[i]||f[0]); db.submissions.push({ts:ts(addD(s.start,5+Math.floor(rnd()*10))),campaign:no,...who(r),fields:JSON.stringify(fields),link:'',public:rnd()<.7}); }
       if(rnd()<sv){
         const base = r.company==='데모 C사'?3.1:r.company==='데모 B사'?3.6:3.9;
-        const sc=()=>Math.max(1,Math.min(5,Math.round(base+(rnd()-.4)*2.2)));
+        const sc=()=>Math.max(1,Math.min(6,Math.round(base*1.2+(rnd()-.4)*2.6)));
         db.surveyPart.push({ts:ts(s.fri4),campaign:no,...who(r)});
         db.surveyResp.push({ts:fmt(s.fri4),campaign:no,company:r.company,division:r.division,team:r.team,position:r.position,duty:r.duty,q1:sc(),q2:sc(),q3:sc(),
           good:rnd()<.25?pick(['먼저 인사하니 다른 그룹사 분들과 대화가 늘었습니다.','팀장님이 먼저 인사하셔서 자연스럽게 따라 하게 됐습니다.','짧은 인사가 회의 분위기를 바꾼다는 걸 느꼈습니다.']):'',
@@ -1150,7 +1152,7 @@ async function viewSurvey(){
   const posList = POSITIONS.includes(p.position)||!p.position ? POSITIONS : [p.position,...POSITIONS];
   const dutyList = DUTIES.includes(p.duty)||!p.duty ? DUTIES : [p.duty,...DUTIES];
   const scale=(name,q,label)=>`<fieldset class="field" aria-describedby="e${name}"><legend>${label} ${esc(q)}<span class="req" aria-hidden="true">*</span></legend>
-    <div class="scale">${SURVEY.scale.map((t,i)=>`<label for="${name}${i+1}"><input type="radio" id="${name}${i+1}" name="${name}" value="${i+1}" required><b class="num">${i+1}</b><span>${esc(t)}</span></label>`).join('')}</div><span class="err" id="e${name}" data-err="${name}"></span></fieldset>`;
+    <div class="scale">${SURVEY.scale.map((t,i)=>`<label for="${name}${i+1}"><input type="radio" id="${name}${i+1}" name="${name}" value="${i+1}" required><b class="num">${i+1}</b><span>${esc(t)}</span></label>`).join('')}</div><div class="scale-ends" aria-hidden="true"><span>1 ${esc(SURVEY.scale[0])}</span><span>${SURVEY.scale.length} ${esc(SURVEY.scale[SURVEY.scale.length-1])}</span></div><span class="err" id="e${name}" data-err="${name}"></span></fieldset>`;
   return `<div class="stack" style="gap:28px">
     ${whoLine()}
     <div class="sec-h"><span class="label">캠페인 ${two(c.no)} Survey · ${ymd(s.surveyFrom)} ~ ${ymd(s.surveyTo)}</span><h1 class="h1">「${esc(c.slogan)}」 돌아보기</h1><p class="h3t">1분이면 끝납니다.</p></div>
@@ -1221,9 +1223,9 @@ function viewGuide(){
       </tbody></table></div></section>
     <section class="stack" aria-labelledby="svT"><h2 class="h2" id="svT">Survey와 지표</h2>
       <div class="grid g3">
-        <article class="kpi"><span class="kpi-l">실천지수</span><span class="kpi-v">① <small>5점 만점</small></span><span class="kpi-s">${esc(SURVEY.q1)}</span></article>
-        <article class="kpi"><span class="kpi-l">리더 솔선지수</span><span class="kpi-v">② <small>5점 만점</small></span><span class="kpi-s">${esc(SURVEY.q2)} 응답 ${MIN_N}명 미만 팀은 비공개</span></article>
-        <article class="kpi"><span class="kpi-l">캠페인 효과</span><span class="kpi-v">③ <small>5점 만점</small></span><span class="kpi-s">${esc(SURVEY.q3)}</span></article>
+        <article class="kpi"><span class="kpi-l">실천지수</span><span class="kpi-v">① <small>6점 만점</small></span><span class="kpi-s">${esc(SURVEY.q1)}</span></article>
+        <article class="kpi"><span class="kpi-l">리더 솔선지수</span><span class="kpi-v">② <small>6점 만점</small></span><span class="kpi-s">${esc(SURVEY.q2)} 응답 ${MIN_N}명 미만 팀은 비공개</span></article>
+        <article class="kpi"><span class="kpi-l">캠페인 효과</span><span class="kpi-v">③ <small>6점 만점</small></span><span class="kpi-s">${esc(SURVEY.q3)}</span></article>
       </div>
       <p class="cap">참여율 = 이번 캠페인에 실천 체크 또는 결과물을 남긴 인원 ÷ 명단 인원. Survey는 4주차 금요일에 열리고 다음 주 화요일에 마감합니다.</p>
     </section>
@@ -1545,7 +1547,7 @@ function adminRun(d,no,n){
   const scopeLine=`<p class="cap">아래 수치 범위 · <b style="color:var(--ink)">${esc(scopeText(f))}</b> · 대상 ${A.target}명 · ${A.teamCount}팀</p>`;
   const vs=fd.visits||[], vIn=vs.filter(v=>v.inNo).length, d7=fmt(addD(D(d.today||fmt(t)),-6)), v7=vs.filter(v=>String(v.last)>=d7).length;
   const visitKpi = d.visits ? kpi('접속률',pct(vIn,A.target),'%',`<span class="num">이번 캠페인 ${vIn}명 · 최근 7일 ${v7}명</span>`) : '';
-  const kpis=`<div class="kpis">${visitKpi}${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.ledCount),'%',`<span class="num">${A.opened} / ${A.ledCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 5')}</div>`;
+  const kpis=`<div class="kpis">${visitKpi}${kpi('참여율',pct(A.part,A.target),'%',`<span class="num">${A.part} / ${A.target}명</span>`)}${kpi('결과물',A.subs,'건')}${kpi('동료 추천',A.recs,'건')}${kpi('리더 오프닝',pct(A.opened,A.ledCount),'%',`<span class="num">${A.opened} / ${A.ledCount}팀</span>`)}${kpi('Survey 응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN}명</span>`)}${kpi('실천지수',f1(A.q1),'/ 6')}</div>`;
   let panel='';
   if(stage===1) panel=panelStory(c,s);
   else if(stage===2) panel=panelOpening(c,s,fd,A);
@@ -1663,13 +1665,13 @@ function panelSurvey(c,s,d,A,f){
 
 · 참여 ${A.part}명 (참여율 ${pct(A.part,A.target)}%)
 · 결과물 ${A.subs}건 · 동료 추천 ${A.recs}건
-· Survey 응답 ${A.svN}명 — 실천지수 ${f1(A.q1)} / 리더 솔선지수 ${q2hide?'비공개':f1(A.q2)} / 캠페인 효과 ${f1(A.q3)} (5점 만점)
+· Survey 응답 ${A.svN}명 — 실천지수 ${f1(A.q1)} / 리더 솔선지수 ${q2hide?'비공개':f1(A.q2)} / 캠페인 효과 ${f1(A.q3)} (6점 만점)
 
 함께 실천해 주셔서 감사합니다.
 ${c.no<13?`다음 캠페인 「${CAMPAIGNS[c.no].slogan}」은 ${md(state.schedule[c.no].start)}에 시작합니다.`:'올해 마지막 캠페인이었습니다.'}`;
   const memoOp=(d.ops||[]).find(o=>Number(o.campaign)===c.no&&Number(o.stage)===4);
   return `<div class="sec-h"><h3 class="h2" style="font-size:22px">4. 캠페인 Survey · 결과 공유</h3><p class="h3t">${md(s.surveyFrom)} ~ ${md(s.surveyTo)} 응답 · 결과를 공유하고 다음 캠페인에 반영합니다</p></div>
-  <div class="kpis">${kpi('응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN} / ${A.target}명</span>`)}${kpi('① 실천지수',f1(A.q1),'/ 5')}${kpi('② 리더 솔선지수',q2hide?'비공개':f1(A.q2),q2hide?'':'/ 5',q2hide?`응답 ${MIN_N}명 미만`:'')}${kpi('③ 캠페인 효과',f1(A.q3),'/ 5')}</div>
+  <div class="kpis">${kpi('응답률',pct(A.svN,A.target),'%',`<span class="num">${A.svN} / ${A.target}명</span>`)}${kpi('① 실천지수',f1(A.q1),'/ 6')}${kpi('② 리더 솔선지수',q2hide?'비공개':f1(A.q2),q2hide?'':'/ 6',q2hide?`응답 ${MIN_N}명 미만`:'')}${kpi('③ 캠페인 효과',f1(A.q3),'/ 6')}</div>
   ${!isLeader?`<div class="tbl-wrap"><table><caption class="skip">${LEVEL_NAME[A.level]}별 Survey 결과</caption><thead><tr><th scope="col">${LEVEL_NAME[A.level]}</th><th scope="col" class="r">응답</th><th scope="col" class="r">① 실천</th><th scope="col" class="r">② 리더</th><th scope="col" class="r">③ 효과</th></tr></thead><tbody>${A.groups.map(x=>`<tr><td>${esc(x.label)}</td><td class="r num">${x.svN}</td><td class="r num">${f1(avg(x.q1))}</td><td class="r num">${q2cell(x)}</td><td class="r num">${f1(avg(x.q3))}</td></tr>`).join('')}</tbody></table></div><p class="cap">응답 ${MIN_N}명 미만인 단위는 ② 리더 솔선지수를 표시하지 않습니다.</p>`:''}
   <div class="grid g2" style="align-items:start">
     <div class="stack" style="gap:10px"><h4 style="font-size:17px">좋았던 경험 <span class="cap num">${A.good.length}건</span></h4>${A.good.length?`<ul class="acts">${A.good.slice(0,8).map(g=>`<li><span class="i" aria-hidden="true">+</span><span>${esc(g.t)}${!isLeader?` <span class="cap">· ${esc(g.org)}</span>`:''}</span></li>`).join('')}</ul>`:'<p class="muted">아직 응답이 없습니다.</p>'}</div>
@@ -1855,7 +1857,7 @@ const FORMS={
     catch(e){ st.className='status bad'; st.textContent=e.message; }
   },
   async survey(f){
-    let ok=true; ['q1','q2','q3'].forEach(q=>{ ok = setErr(f,q, f.querySelector(`input[name=${q}]:checked`)?'':'1~5 중 하나를 고르세요') && ok; });
+    let ok=true; ['q1','q2','q3'].forEach(q=>{ ok = setErr(f,q, f.querySelector(`input[name=${q}]:checked`)?'':'1~6 중 하나를 고르세요') && ok; });
     if(!ok){ const first=f.querySelector('[aria-invalid="true"]'); first&&first.focus(); return; }
     const yes=await confirmDlg('Survey를 제출할까요?','제출한 응답은 수정할 수 없습니다.','제출');
     if(!yes) return;
